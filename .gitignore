@@ -1,0 +1,23 @@
+# Maven / Java
+backend/target/
+*.class
+*.jar
+*.war
+.mvn/
+
+# Node / React
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+*.local
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS noise
+.DS_Store
+Thumbs.db
