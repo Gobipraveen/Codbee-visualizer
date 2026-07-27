@@ -105,7 +105,7 @@ export default function App() {
       }
       setCurrentStep(0);
     } catch (err) {
-      setError(err.message || 'Failed to communicate with the backend.');
+      setError(err.message || 'Failed to communicate with the backendd.');
     } finally {
       setLoading(false);
     }
