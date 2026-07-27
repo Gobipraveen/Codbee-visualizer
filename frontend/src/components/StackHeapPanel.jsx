@@ -16,10 +16,6 @@ function isHashMap(type) {
   return type && (type === 'java.util.HashMap' || type.includes('HashMap') || type.includes('LinkedHashMap'));
 }
 
-function isString(type) {
-  return type === 'java.lang.String';
-}
-
 // ─── Main Panel ─────────────────────────────────────────────────────────────
 
 export default function StackHeapPanel({ stepData }) {
@@ -46,8 +42,10 @@ export default function StackHeapPanel({ stepData }) {
       {/* ── Stack Panel ── */}
       <div style={panelCardStyle}>
         <div style={panelHeaderStyle}>
-          <Layers size={15} color="#3b82f6" />
-          <span>Call Stack</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Layers size={14} color="#0a84ff" />
+            <span>Call Stack</span>
+          </div>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {stack.length === 0 ? (
@@ -55,19 +53,19 @@ export default function StackHeapPanel({ stepData }) {
           ) : (
             stack.map((frame, idx) => (
               <div key={idx} style={idx === 0 ? activeFrameCardStyle : frameCardStyle}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', borderBottom: '1px solid #334155', paddingBottom: '4px' }}>
-                  <span style={{ fontWeight: 600, color: idx === 0 ? '#93c5fd' : '#60a5fa', fontSize: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '6px' }}>
+                  <span style={{ fontWeight: 600, color: idx === 0 ? '#64b5f6' : '#90caf9', fontSize: '12px', fontFamily: 'var(--font-mac)' }}>
                     {cleanClassName(frame.className)}.{frame.methodName}()
                   </span>
-                  <span style={{ fontSize: '11px', color: '#94a3b8', background: '#0f172a', padding: '2px 6px', borderRadius: '4px' }}>
+                  <span style={{ fontSize: '11px', color: '#94a3b8', background: 'rgba(255, 255, 255, 0.06)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.06)' }}>
                     line {frame.line}
                   </span>
                 </div>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                   <tbody>
                     {Object.entries(frame.variables || {}).map(([varName, valDto]) => (
-                      <tr key={varName} style={{ borderBottom: '1px dotted #1e293b' }}>
-                        <td style={{ padding: '4px 0', color: '#cbd5e1', fontFamily: 'monospace', fontWeight: 500 }}>
+                      <tr key={varName} style={{ borderBottom: '1px dotted rgba(255, 255, 255, 0.06)' }}>
+                        <td style={{ padding: '4px 0', color: '#cbd5e1', fontFamily: 'var(--font-mono)', fontWeight: 500 }}>
                           {varName}
                         </td>
                         <td style={{ padding: '4px 0', textAlign: 'right' }}>
@@ -86,8 +84,10 @@ export default function StackHeapPanel({ stepData }) {
       {/* ── Heap Panel ── */}
       <div style={panelCardStyle}>
         <div style={panelHeaderStyle}>
-          <Database size={15} color="#10b981" />
-          <span>Heap Objects</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Database size={14} color="#30d158" />
+            <span>Heap Objects</span>
+          </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: '10px', alignContent: 'start' }}>
           {Object.keys(heapMap).length === 0 ? (
@@ -108,30 +108,26 @@ export default function StackHeapPanel({ stepData }) {
 function HeapCard({ heapId, objDto }) {
   const { type, fields } = objDto;
 
-  // Arrays: render as index-row boxes
   if (isArrayType(type)) {
     return <ArrayCard heapId={heapId} type={type} fields={fields} />;
   }
 
-  // ArrayList: show size + elements readable
   if (isArrayList(type)) {
     return <CollectionCard heapId={heapId} type="ArrayList" fields={fields} />;
   }
 
-  // HashMap / LinkedHashMap
   if (isHashMap(type)) {
     return <CollectionCard heapId={heapId} type="HashMap" fields={fields} />;
   }
 
-  // Default: generic object card
   return (
     <div data-heap-card-id={heapId} style={heapCardStyle}>
       <HeapCardHeader heapId={heapId} label={cleanClassName(type)} />
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
         <tbody>
           {Object.entries(fields || {}).map(([fieldName, valDto]) => (
-            <tr key={fieldName} style={{ borderBottom: '1px dotted #1e293b' }}>
-              <td style={{ padding: '3px 0', color: '#94a3b8', fontFamily: 'monospace' }}>{fieldName}</td>
+            <tr key={fieldName} style={{ borderBottom: '1px dotted rgba(255, 255, 255, 0.06)' }}>
+              <td style={{ padding: '3px 0', color: '#94a3b8', fontFamily: 'var(--font-mono)' }}>{fieldName}</td>
               <td style={{ padding: '3px 0', textAlign: 'right' }}>
                 <RenderValue valDto={valDto} sourceId={`heap-${heapId}-${fieldName}`} />
               </td>
@@ -170,17 +166,17 @@ function ArrayCard({ heapId, type, fields }) {
             >
               <div
                 style={{
-                  border: '1px solid #334155',
-                  background: '#1e293b',
-                  borderRadius: '4px',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  borderRadius: '5px',
                   padding: '3px 6px',
                   fontSize: '11px',
-                  fontFamily: 'monospace',
+                  fontFamily: 'var(--font-mono)',
                 }}
               >
                 <RenderValue valDto={valDto} sourceId={`heap-${heapId}-${idx}`} />
               </div>
-              <span style={{ fontSize: '10px', color: '#64748b', marginTop: '1px' }}>{idx}</span>
+              <span style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>{idx}</span>
             </div>
           ))}
         </div>
@@ -190,12 +186,9 @@ function ArrayCard({ heapId, type, fields }) {
 }
 
 function CollectionCard({ heapId, type, fields }) {
-  // Try to extract meaningful content from internal fields
-  // ArrayList has elementData (array ref) and size
   const sizeField = fields['size'];
   const size = sizeField ? sizeField.value : null;
 
-  // For non-String[] refs we just list non-internal fields
   const displayFields = Object.entries(fields || {}).filter(
     ([k]) => !['serialVersionUID', 'DEFAULT_CAPACITY', 'EMPTY_ELEMENTDATA', 'DEFAULTCAPACITY_EMPTY_ELEMENTDATA', 'MAX_ARRAY_SIZE', 'modCount', 'threshold', 'loadFactor', 'table', 'entrySet', 'keySet', 'values'].includes(k)
   );
@@ -215,8 +208,8 @@ function CollectionCard({ heapId, type, fields }) {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
           <tbody>
             {displayFields.map(([fieldName, valDto]) => (
-              <tr key={fieldName} style={{ borderBottom: '1px dotted #1e293b' }}>
-                <td style={{ padding: '3px 0', color: '#94a3b8', fontFamily: 'monospace' }}>{fieldName}</td>
+              <tr key={fieldName} style={{ borderBottom: '1px dotted rgba(255, 255, 255, 0.06)' }}>
+                <td style={{ padding: '3px 0', color: '#94a3b8', fontFamily: 'var(--font-mono)' }}>{fieldName}</td>
                 <td style={{ padding: '3px 0', textAlign: 'right' }}>
                   <RenderValue valDto={valDto} sourceId={`heap-${heapId}-${fieldName}`} />
                 </td>
@@ -231,12 +224,12 @@ function CollectionCard({ heapId, type, fields }) {
 
 function HeapCardHeader({ heapId, label, badge }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', borderBottom: '1px solid #334155', paddingBottom: '4px', flexWrap: 'wrap', gap: '4px' }}>
-      <span style={{ fontWeight: 700, color: '#34d399', fontSize: '12px', fontFamily: 'monospace' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', paddingBottom: '4px', flexWrap: 'wrap', gap: '4px' }}>
+      <span style={{ fontWeight: 600, color: '#30d158', fontSize: '12px', fontFamily: 'var(--font-mono)' }}>
         {label}
         {badge && <span style={{ marginLeft: '6px', fontSize: '10px', color: '#94a3b8' }}>{badge}</span>}
       </span>
-      <span style={{ fontSize: '10px', color: '#a78bfa', background: 'rgba(167,139,250,0.15)', padding: '1px 5px', borderRadius: '4px' }}>
+      <span style={{ fontSize: '10px', color: '#bf5af2', background: 'rgba(191, 90, 242, 0.15)', border: '1px solid rgba(191, 90, 242, 0.3)', padding: '1px 6px', borderRadius: '10px' }}>
         {heapId}
       </span>
     </div>
@@ -246,7 +239,7 @@ function HeapCardHeader({ heapId, label, badge }) {
 // ─── RenderValue ─────────────────────────────────────────────────────────────
 
 export function RenderValue({ valDto, sourceId }) {
-  if (!valDto) return <span style={{ color: '#64748b' }}>null</span>;
+  if (!valDto) return <span style={{ color: '#64748b', fontFamily: 'var(--font-mono)' }}>null</span>;
 
   if (valDto.type === 'reference') {
     const targetRef = String(valDto.value);
@@ -255,13 +248,13 @@ export function RenderValue({ valDto, sourceId }) {
         data-ref-target={targetRef}
         data-source-id={sourceId}
         style={{
-          color: '#c084fc',
-          background: 'rgba(192,132,252,0.15)',
-          border: '1px solid rgba(192,132,252,0.4)',
+          color: '#bf5af2',
+          background: 'rgba(191, 90, 242, 0.15)',
+          border: '1px solid rgba(191, 90, 242, 0.3)',
           borderRadius: '12px',
           padding: '2px 8px',
           fontSize: '11px',
-          fontFamily: 'monospace',
+          fontFamily: 'var(--font-mono)',
           display: 'inline-flex',
           alignItems: 'center',
           gap: '4px',
@@ -277,46 +270,46 @@ export function RenderValue({ valDto, sourceId }) {
 
   if (valDto.type === 'string') {
     return (
-      <span style={{ color: '#fde047', fontFamily: 'monospace', fontSize: '12px' }}>
+      <span style={{ color: '#ffd60a', fontFamily: 'var(--font-mono)', fontSize: '12px' }}>
         &ldquo;{String(valDto.value).length > 24 ? valDto.value.substring(0, 24) + '…' : valDto.value}&rdquo;
       </span>
     );
   }
 
   if (valDto.type === 'null') {
-    return <span style={{ color: '#64748b', fontFamily: 'monospace' }}>null</span>;
+    return <span style={{ color: '#64748b', fontFamily: 'var(--font-mono)' }}>null</span>;
   }
 
   if (valDto.type === 'primitive') {
     const v = valDto.value;
-    // Boolean coloring
     if (v === true || v === false) {
-      return <span style={{ color: v ? '#4ade80' : '#f87171', fontFamily: 'monospace' }}>{String(v)}</span>;
+      return <span style={{ color: v ? '#30d158' : '#ff453a', fontFamily: 'var(--font-mono)' }}>{String(v)}</span>;
     }
-    return <span style={{ color: '#38bdf8', fontFamily: 'monospace' }}>{String(v)}</span>;
+    return <span style={{ color: '#64d2ff', fontFamily: 'var(--font-mono)' }}>{String(v)}</span>;
   }
 
-  return <span style={{ color: '#94a3b8', fontFamily: 'monospace' }}>{String(valDto.value)}</span>;
+  return <span style={{ color: '#94a3b8', fontFamily: 'var(--font-mono)' }}>{String(valDto.value)}</span>;
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function cleanClassName(fullName) {
   if (!fullName) return '';
-  // strip package
   const parts = fullName.split('.');
   const lastPart = parts[parts.length - 1];
-  // handle inner class suffix (e.g. LinkedListDemo$Node → Node)
   return lastPart.includes('$') ? lastPart.split('$').pop() : lastPart;
 }
 
-// ─── Styles ──────────────────────────────────────────────────────────────────
+// ─── macOS Card Styles ────────────────────────────────────────────────────────
 
 const panelCardStyle = {
-  background: '#121826',
-  borderRadius: '8px',
-  border: '1px solid #1e293b',
-  padding: '12px',
+  background: 'rgba(32, 34, 44, 0.85)',
+  backdropFilter: 'blur(20px)',
+  WebkitBackdropFilter: 'blur(20px)',
+  borderRadius: '12px',
+  border: '1px solid rgba(255, 255, 255, 0.09)',
+  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
+  padding: '14px',
   overflowY: 'auto',
   display: 'flex',
   flexDirection: 'column',
@@ -325,34 +318,38 @@ const panelCardStyle = {
 const panelHeaderStyle = {
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  justify-content: 'space-between',
   fontWeight: 600,
   fontSize: '11px',
-  color: '#f8fafc',
+  color: '#e2e8f0',
   marginBottom: '12px',
   textTransform: 'uppercase',
-  letterSpacing: '0.5px',
+  letterSpacing: '0.6px',
   flexShrink: 0,
+  fontFamily: 'var(--font-mac)',
 };
 
 const frameCardStyle = {
-  background: '#1e293b',
-  borderRadius: '6px',
-  padding: '8px 10px',
-  border: '1px solid #334155',
+  background: 'rgba(255, 255, 255, 0.04)',
+  borderRadius: '8px',
+  padding: '10px 12px',
+  border: '1px solid rgba(255, 255, 255, 0.08)',
+  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)',
 };
 
 const activeFrameCardStyle = {
   ...frameCardStyle,
-  border: '1px solid #3b82f6',
-  boxShadow: '0 0 0 1px rgba(59,130,246,0.2)',
+  background: 'rgba(10, 132, 255, 0.08)',
+  border: '1px solid rgba(10, 132, 255, 0.4)',
+  boxShadow: '0 4px 12px rgba(10, 132, 255, 0.2)',
 };
 
 const heapCardStyle = {
-  background: '#0f172a',
-  borderRadius: '6px',
-  padding: '8px 10px',
-  border: '1px solid #334155',
+  background: 'rgba(20, 21, 28, 0.8)',
+  borderRadius: '8px',
+  padding: '10px 12px',
+  border: '1px solid rgba(255, 255, 255, 0.08)',
+  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)',
 };
 
 const emptyTextStyle = {
@@ -360,5 +357,6 @@ const emptyTextStyle = {
   color: '#64748b',
   fontStyle: 'italic',
   textAlign: 'center',
-  padding: '12px 0',
+  padding: '16px 0',
+  fontFamily: 'var(--font-mac)',
 };

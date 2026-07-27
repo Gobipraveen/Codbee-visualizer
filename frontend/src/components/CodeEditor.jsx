@@ -59,7 +59,17 @@ export default function CodeEditor({ code, onChange, currentLine }) {
   }, [currentLine]);
 
   return (
-    <div style={{ height: '100%', width: '100%', borderRadius: '8px', overflow: 'hidden' }}>
+    <div style={{
+      height: '100%',
+      width: '100%',
+      borderRadius: '12px',
+      overflow: 'hidden',
+      border: '1px solid rgba(255, 255, 255, 0.09)',
+      boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)',
+      background: 'rgba(32, 34, 44, 0.85)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+    }}>
       <Editor
         height="100%"
         defaultLanguage="java"
@@ -68,8 +78,8 @@ export default function CodeEditor({ code, onChange, currentLine }) {
         onChange={onChange}
         onMount={handleEditorDidMount}
         options={{
-          fontSize: 14,
-          fontFamily: "'Fira Code', monospace",
+          fontSize: 13.5,
+          fontFamily: "var(--font-mono)",
           minimap: { enabled: false },
           scrollBeyondLastLine: false,
           automaticLayout: true,
