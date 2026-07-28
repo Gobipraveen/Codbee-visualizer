@@ -12,6 +12,10 @@ export default function SteppingControls({ currentStep, totalSteps, onStepChange
 
   useEffect(() => {
     const handleKeyDown = (e) => {
+      // Don't intercept arrow keys if user is typing in Monaco editor or input
+      const targetTag = e.target.tagName.toLowerCase();
+      if (targetTag === 'textarea' || targetTag === 'input') return;
+
       if (disabled || totalSteps <= 0) return;
       if (e.key === 'ArrowLeft') {
         handlePrev();
@@ -25,22 +29,22 @@ export default function SteppingControls({ currentStep, totalSteps, onStepChange
 
   return (
     <div style={{
-      display: 'flex',
+      display: 'inline-flex',
       alignItems: 'center',
-      gap: '12px',
-      background: '#121826',
-      padding: '10px 16px',
-      borderRadius: '8px',
+      gap: '8px',
+      background: '#0f172a',
+      padding: '3px 10px',
+      borderRadius: '6px',
       border: '1px solid #1e293b'
     }}>
-      <div style={{ display: 'flex', gap: '6px' }}>
+      <div style={{ display: 'flex', gap: '3px' }}>
         <button
           onClick={handleFirst}
           disabled={disabled || isFirst}
           title="First Step"
           style={btnStyle(disabled || isFirst)}
         >
-          <SkipBack size={16} />
+          <SkipBack size={13} />
         </button>
         <button
           onClick={handlePrev}
@@ -48,7 +52,7 @@ export default function SteppingControls({ currentStep, totalSteps, onStepChange
           title="Previous Step (Left Arrow)"
           style={btnStyle(disabled || isFirst)}
         >
-          <ChevronLeft size={18} />
+          <ChevronLeft size={15} />
         </button>
         <button
           onClick={handleNext}
@@ -56,7 +60,7 @@ export default function SteppingControls({ currentStep, totalSteps, onStepChange
           title="Next Step (Right Arrow)"
           style={btnStyle(disabled || isLast, true)}
         >
-          <ChevronRight size={18} />
+          <ChevronRight size={15} />
         </button>
         <button
           onClick={handleLast}
@@ -64,7 +68,7 @@ export default function SteppingControls({ currentStep, totalSteps, onStepChange
           title="Last Step"
           style={btnStyle(disabled || isLast)}
         >
-          <SkipForward size={16} />
+          <SkipForward size={13} />
         </button>
       </div>
 
@@ -75,11 +79,11 @@ export default function SteppingControls({ currentStep, totalSteps, onStepChange
         value={totalSteps > 0 ? currentStep : 0}
         onChange={(e) => onStepChange(Number(e.target.value))}
         disabled={disabled || totalSteps <= 0}
-        style={{ flex: 1, accentColor: '#3b82f6', cursor: disabled ? 'not-allowed' : 'pointer' }}
+        style={{ width: '110px', accentColor: '#3b82f6', cursor: disabled ? 'not-allowed' : 'pointer' }}
       />
 
-      <span style={{ fontSize: '13px', fontWeight: 600, color: '#94a3b8', minWidth: '100px', textAlign: 'right' }}>
-        {totalSteps > 0 ? `Step ${currentStep + 1} of ${totalSteps}` : 'Step 0 of 0'}
+      <span style={{ fontSize: '11px', fontWeight: 600, color: '#94a3b8', minWidth: '76px', textAlign: 'right', fontFamily: 'monospace' }}>
+        {totalSteps > 0 ? `${currentStep + 1} / ${totalSteps}` : '0 / 0'}
       </span>
     </div>
   );
@@ -90,9 +94,9 @@ function btnStyle(disabled, primary = false) {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '36px',
-    height: '36px',
-    borderRadius: '6px',
+    width: '28px',
+    height: '26px',
+    borderRadius: '4px',
     border: 'none',
     background: primary ? (disabled ? '#1e293b' : '#3b82f6') : '#1e293b',
     color: disabled ? '#475569' : '#f8fafc',

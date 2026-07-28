@@ -1,32 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
 import CodeEditor from './components/CodeEditor';
 import SteppingControls from './components/SteppingControls';
-import StackHeapPanel from './components/StackHeapPanel';
-import StdoutConsole from './components/StdoutConsole';
-import { Play, AlertCircle, Loader2, Code2, Share2, CheckCheck, ChevronDown } from 'lucide-react';
+import VisualizationCanvas from './components/VisualizationCanvas';
+import StdoutDrawer from './components/StdoutDrawer';
+import { Play, AlertCircle, Loader2, Code2, Share2, CheckCheck, ChevronDown, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { EXAMPLES } from './examples';
 import { buildShareableUrl, readCodeFromUrlParam } from './shareLink';
 
-/**
- * Parse the error field from the backend.
- * Runtime exceptions look like: "java.lang.SomeException: message (at line X)"
- * Compilation errors look like: "error: ..." or contain "javac" / ".java:"
- * Returns { type, message } for runtime exceptions, null for compiler errors (let them show as red banners).
- */
+// ─── Exception Detection Helper ─────────────────────────────────────────────
+
 function detectException(errorMsg) {
   if (!errorMsg) return null;
 
-  // Compilation errors: contain "error:" at start of a line, or ".java:" file references
   if (/\berror:/i.test(errorMsg) || /\.java:\d+:/i.test(errorMsg)) {
-    return null; // show as red error banner
+    return null;
   }
 
-  // Runtime exceptions: Java exception class names contain dots and "Exception" or "Error"
   const excMatch = errorMsg.match(/^((?:[a-z]+\.)+[A-Z][A-Za-z]*(?:Exception|Error)[A-Za-z]*):?\s*(.*)/);
   if (excMatch) {
-    const type = excMatch[1].split('.').pop(); // short class name
+    const type = excMatch[1].split('.').pop();
     const rest = excMatch[2] || '';
-    // Extract "at line X" if present
     const lineMatch = rest.match(/\(at line (\d+)\)$/);
     const line = lineMatch ? parseInt(lineMatch[1], 10) : null;
     const message = rest.replace(/\s*\(at line \d+\)\s*$/, '').trim();
@@ -36,11 +29,9 @@ function detectException(errorMsg) {
   return null;
 }
 
-
-// ─── App ─────────────────────────────────────────────────────────────────────
+// ─── Main App Component ──────────────────────────────────────────────────────
 
 export default function App() {
-  // Load code from URL param on first mount, else default to linked-list example
   const defaultCode = readCodeFromUrlParam() || EXAMPLES[0].code;
 
   const [code, setCode] = useState(defaultCode);
@@ -48,12 +39,19 @@ export default function App() {
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [exception, setException] = useState(null); // { type, message, line }
-  const [shareStatus, setShareStatus] = useState('idle'); // 'idle' | 'copied'
+  const [exception, setException] = useState(null);
+  const [shareStatus, setShareStatus] = useState('idle');
   const [exampleOpen, setExampleOpen] = useState(false);
   const exampleRef = useRef(null);
 
-  // Close dropdown when clicking outside
+  // Left Panel Resizing & Collapsing State
+  const [isEditorCollapsed, setIsEditorCollapsed] = useState(false);
+  const [editorWidth, setEditorWidth] = useState(380); // in px
+  const [isResizingEditor, setIsResizingEditor] = useState(false);
+  const startXRef = useRef(0);
+  const startWidthRef = useRef(380);
+
+  // Close dropdown on click outside
   useEffect(() => {
     function onClickOutside(e) {
       if (exampleRef.current && !exampleRef.current.contains(e.target)) {
@@ -64,7 +62,37 @@ export default function App() {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
-  // ── Visualize ───────────────────────────────────────────────────────────────
+  // Drag resizer for Editor panel
+  const handleSplitterMouseDown = (e) => {
+    if (isEditorCollapsed) return;
+    setIsResizingEditor(true);
+    startXRef.current = e.clientX;
+    startWidthRef.current = editorWidth;
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isResizingEditor) return;
+      const deltaX = e.clientX - startXRef.current;
+      const newWidth = Math.min(750, Math.max(220, startWidthRef.current + deltaX));
+      setEditorWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizingEditor(false);
+    };
+
+    if (isResizingEditor) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isResizingEditor]);
+
+  // ── Visualize Execution ────────────────────────────────────────────────────
 
   const handleVisualize = async () => {
     setLoading(true);
@@ -92,7 +120,6 @@ export default function App() {
       }
 
       if (data.error) {
-        // Could be a compilation error OR a runtime exception that stopped the trace
         const exc = detectException(data.error);
         if (exc) {
           setException(exc);
@@ -111,7 +138,7 @@ export default function App() {
     }
   };
 
-  // ── Share Link ───────────────────────────────────────────────────────────────
+  // ── Share Link ─────────────────────────────────────────────────────────────
 
   const handleShare = () => {
     const url = buildShareableUrl(code);
@@ -122,7 +149,7 @@ export default function App() {
     });
   };
 
-  // ── Load Example ─────────────────────────────────────────────────────────────
+  // ── Load Example ───────────────────────────────────────────────────────────
 
   const handleLoadExample = (example) => {
     setCode(example.code);
@@ -131,39 +158,62 @@ export default function App() {
     setError(null);
     setException(null);
     setExampleOpen(false);
-    // clear URL param
     const url = new URL(window.location.href);
     url.searchParams.delete('code');
     window.history.replaceState({}, '', url.toString());
   };
 
-  // ── Derived state ────────────────────────────────────────────────────────────
+  // ── Derived state ──────────────────────────────────────────────────────────
 
   const currentStepData = trace[currentStep] || null;
   const currentLine = currentStepData?.line || 0;
 
-  // ── Render ───────────────────────────────────────────────────────────────────
+  // ── Render Layout ──────────────────────────────────────────────────────────
 
   return (
     <div className="app-root">
-      {/* ── Navbar ── */}
+      {/* ── Single-Row Top Bar ── */}
       <header className="navbar">
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Code2 size={22} color="#3b82f6" />
+          <Code2 size={20} color="#3b82f6" />
           <span className="navbar-title">
             CODBEE <span className="navbar-badge">Java Tutor</span>
           </span>
+
+          {/* Toggle Code Editor Panel Button */}
+          <button
+            className="btn btn-ghost"
+            onClick={() => setIsEditorCollapsed((prev) => !prev)}
+            title={isEditorCollapsed ? 'Show Code Editor' : 'Hide Code Editor'}
+            style={{ padding: '6px 10px', marginLeft: '6px' }}
+          >
+            {isEditorCollapsed ? <PanelLeftOpen size={16} color="#60a5fa" /> : <PanelLeftClose size={16} />}
+            <span style={{ fontSize: '12px', display: 'inline-block' }}>
+              {isEditorCollapsed ? 'Code' : 'Hide Code'}
+            </span>
+          </button>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-          {/* Load Example dropdown */}
+        {/* Center/Right Action Group & Stepping Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+          {/* Stepping Controls */}
+          <SteppingControls
+            currentStep={currentStep}
+            totalSteps={trace.length}
+            onStepChange={setCurrentStep}
+            disabled={loading || trace.length === 0}
+          />
+
+          <div style={{ width: '1px', height: '20px', background: '#1e293b', margin: '0 2px' }} />
+
+          {/* Load Example Dropdown */}
           <div ref={exampleRef} style={{ position: 'relative' }}>
             <button
               className="btn btn-ghost"
               onClick={() => setExampleOpen((o) => !o)}
               title="Load an example program"
             >
-              Examples <ChevronDown size={14} />
+              Examples <ChevronDown size={13} />
             </button>
             {exampleOpen && (
               <div className="dropdown-menu">
@@ -193,21 +243,21 @@ export default function App() {
             )}
           </button>
 
-          {/* Visualize button */}
+          {/* Visualize Execution button */}
           <button
             className="btn btn-primary"
             onClick={handleVisualize}
             disabled={loading}
-            title="Compile and visualize"
+            title="Compile and visualize execution"
           >
             {loading
-              ? <><Loader2 size={15} className="spin-icon" /> Tracing...</>
+              ? <><Loader2 size={14} className="spin-icon" /> Tracing...</>
               : <><Play size={14} fill="white" /> Visualize</>}
           </button>
         </div>
       </header>
 
-      {/* ── Error banner (compilation / network errors) ── */}
+      {/* ── Error Banner (Compile/Network) ── */}
       {error && (
         <div className="banner banner-error">
           <AlertCircle size={15} />
@@ -215,7 +265,7 @@ export default function App() {
         </div>
       )}
 
-      {/* ── Exception banner (runtime exceptions) ── */}
+      {/* ── Exception Banner (Runtime) ── */}
       {exception && (
         <div className="banner banner-exception">
           <AlertCircle size={15} style={{ flexShrink: 0 }} />
@@ -234,31 +284,50 @@ export default function App() {
         </div>
       )}
 
-      {/* ── Main content ── */}
-      <main className="main-grid">
-        {/* Left: Code Editor + Controls */}
-        <section className="col-editor">
-          <div style={{ flex: 1, minHeight: 0 }}>
-            <CodeEditor code={code} onChange={setCode} currentLine={currentLine} />
-          </div>
-          <SteppingControls
-            currentStep={currentStep}
-            totalSteps={trace.length}
-            onStepChange={setCurrentStep}
-            disabled={loading || trace.length === 0}
-          />
-        </section>
+      {/* ── Main Layout Workspace ── */}
+      <main className="workspace-container">
+        {/* Left: Collapsible & Drag-Resizable Monaco Code Editor */}
+        {!isEditorCollapsed && (
+          <>
+            <section
+              style={{
+                width: `${editorWidth}px`,
+                height: '100%',
+                flexShrink: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                background: '#121826',
+                overflow: 'hidden',
+              }}
+            >
+              <CodeEditor code={code} onChange={setCode} currentLine={currentLine} />
+            </section>
 
-        {/* Center: Stack + Heap */}
-        <section className="col-stack-heap">
-          <StackHeapPanel stepData={currentStepData} />
-        </section>
+            {/* Splitter Resize Bar */}
+            <div
+              onMouseDown={handleSplitterMouseDown}
+              title="Drag to resize editor panel"
+              style={{
+                width: '6px',
+                height: '100%',
+                background: isResizingEditor ? '#3b82f6' : '#1e293b',
+                cursor: 'col-resize',
+                flexShrink: 0,
+                transition: 'background 0.15s',
+                zIndex: 10,
+              }}
+            />
+          </>
+        )}
 
-        {/* Right: Stdout */}
-        <section className="col-stdout">
-          <StdoutConsole stdout={currentStepData?.stdout || ''} />
+        {/* Center/Right: Zoomable & Pannable Visualization Canvas Area */}
+        <section style={{ flex: 1, height: '100%', minWidth: 0, overflow: 'hidden' }}>
+          <VisualizationCanvas stepData={currentStepData} />
         </section>
       </main>
+
+      {/* ── Bottom Drawer: Standard Output (stdout) ── */}
+      <StdoutDrawer stdout={currentStepData?.stdout || ''} />
     </div>
   );
 }

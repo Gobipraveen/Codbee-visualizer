@@ -24,7 +24,7 @@ body {
   background: var(--bg-root);
   color: var(--text-main);
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 /* ── Scrollbars ─────────────────────────────────────────────────────────────── */
@@ -47,19 +47,20 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 18px;
+  padding: 8px 16px;
   background: var(--bg-card);
   border-bottom: 1px solid var(--bg-card-border);
   flex-shrink: 0;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .navbar-title {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.4px;
   color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
 }
 
 .navbar-badge {
@@ -79,7 +80,7 @@ body {
   gap: 6px;
   border: none;
   border-radius: 6px;
-  padding: 7px 14px;
+  padding: 6px 12px;
   font-size: 13px;
   font-weight: 600;
   font-family: inherit;
@@ -126,7 +127,7 @@ body {
 .dropdown-item {
   display: block;
   width: 100%;
-  padding: 9px 14px;
+  padding: 8px 14px;
   font-size: 13px;
   font-family: inherit;
   text-align: left;
@@ -143,8 +144,8 @@ body {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  padding: 8px 18px;
-  font-size: 13px;
+  padding: 6px 16px;
+  font-size: 12px;
   flex-shrink: 0;
 }
 
@@ -160,40 +161,17 @@ body {
   color: #fdba74;
 }
 
-/* ── Main grid ──────────────────────────────────────────────────────────────── */
-.main-grid {
+/* ── Main Workspace Container ──────────────────────────────────────────────── */
+.workspace-container {
   flex: 1;
-  display: grid;
-  gap: 10px;
-  padding: 10px;
-  overflow: hidden;
-  min-height: 0;
-  /* Desktop: 3 columns */
-  grid-template-columns: 38% 47% 15%;
-  grid-template-rows: 1fr;
-}
-
-.col-editor {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
   height: 100%;
-  min-height: 0;
-}
-
-.col-stack-heap {
-  height: 100%;
-  min-height: 0;
+  width: 100%;
   overflow: hidden;
+  position: relative;
 }
 
-.col-stdout {
-  height: 100%;
-  min-height: 0;
-  overflow: hidden;
-}
-
-/* ── Monaco decoration ──────────────────────────────────────────────────────── */
+/* ── Monaco Line Highlight ──────────────────────────────────────────────────── */
 .active-line-highlight {
   background-color: rgba(59, 130, 246, 0.22) !important;
   border-left: 3px solid #3b82f6 !important;
@@ -202,32 +180,4 @@ body {
   background: #3b82f6;
   border-radius: 50%;
   margin-left: 4px;
-}
-
-/* ── Responsive: laptop/tablet (< 1100px) ──────────────────────────────────── */
-@media (max-width: 1100px) {
-  .main-grid {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 60vh auto;
-  }
-  .col-editor { grid-column: 1; grid-row: 1; }
-  .col-stack-heap { grid-column: 2; grid-row: 1; }
-  .col-stdout {
-    grid-column: 1 / -1;
-    grid-row: 2;
-    height: auto;
-    max-height: 220px;
-  }
-}
-
-/* ── Responsive: small laptop (< 800px) ────────────────────────────────────── */
-@media (max-width: 800px) {
-  .main-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: 40vh 40vh auto;
-    overflow-y: auto;
-  }
-  .col-editor { grid-column: 1; grid-row: 1; }
-  .col-stack-heap { grid-column: 1; grid-row: 2; }
-  .col-stdout { grid-column: 1; grid-row: 3; height: auto; max-height: 200px; }
 }
