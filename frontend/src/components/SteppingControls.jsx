@@ -28,13 +28,10 @@ export default function SteppingControls({ currentStep, totalSteps, onStepChange
       display: 'flex',
       alignItems: 'center',
       gap: '12px',
-      background: 'rgba(32, 34, 44, 0.85)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
+      background: '#121826',
       padding: '10px 16px',
-      borderRadius: '12px',
-      border: '1px solid rgba(255, 255, 255, 0.09)',
-      boxShadow: '0 8px 24px rgba(0, 0, 0, 0.35)'
+      borderRadius: '8px',
+      border: '1px solid #1e293b'
     }}>
       <div style={{ display: 'flex', gap: '6px' }}>
         <button
@@ -43,7 +40,7 @@ export default function SteppingControls({ currentStep, totalSteps, onStepChange
           title="First Step"
           style={btnStyle(disabled || isFirst)}
         >
-          <SkipBack size={15} />
+          <SkipBack size={16} />
         </button>
         <button
           onClick={handlePrev}
@@ -51,7 +48,7 @@ export default function SteppingControls({ currentStep, totalSteps, onStepChange
           title="Previous Step (Left Arrow)"
           style={btnStyle(disabled || isFirst)}
         >
-          <ChevronLeft size={16} />
+          <ChevronLeft size={18} />
         </button>
         <button
           onClick={handleNext}
@@ -59,7 +56,7 @@ export default function SteppingControls({ currentStep, totalSteps, onStepChange
           title="Next Step (Right Arrow)"
           style={btnStyle(disabled || isLast, true)}
         >
-          <ChevronRight size={16} />
+          <ChevronRight size={18} />
         </button>
         <button
           onClick={handleLast}
@@ -67,7 +64,7 @@ export default function SteppingControls({ currentStep, totalSteps, onStepChange
           title="Last Step"
           style={btnStyle(disabled || isLast)}
         >
-          <SkipForward size={15} />
+          <SkipForward size={16} />
         </button>
       </div>
 
@@ -78,10 +75,10 @@ export default function SteppingControls({ currentStep, totalSteps, onStepChange
         value={totalSteps > 0 ? currentStep : 0}
         onChange={(e) => onStepChange(Number(e.target.value))}
         disabled={disabled || totalSteps <= 0}
-        style={{ flex: 1, accentColor: '#0a84ff', cursor: disabled ? 'not-allowed' : 'pointer' }}
+        style={{ flex: 1, accentColor: '#3b82f6', cursor: disabled ? 'not-allowed' : 'pointer' }}
       />
 
-      <span style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8', minWidth: '95px', textAlign: 'right', fontFamily: 'var(--font-mac)' }}>
+      <span style={{ fontSize: '13px', fontWeight: 600, color: '#94a3b8', minWidth: '100px', textAlign: 'right' }}>
         {totalSteps > 0 ? `Step ${currentStep + 1} of ${totalSteps}` : 'Step 0 of 0'}
       </span>
     </div>
@@ -93,16 +90,13 @@ function btnStyle(disabled, primary = false) {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '32px',
-    height: '32px',
-    borderRadius: '7px',
-    border: primary ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid rgba(255, 255, 255, 0.1)',
-    background: primary
-      ? (disabled ? 'rgba(255, 255, 255, 0.08)' : 'linear-gradient(180deg, #0a84ff 0%, #0066cc 100%)')
-      : 'rgba(255, 255, 255, 0.07)',
-    color: disabled ? '#475569' : '#ffffff',
+    width: '36px',
+    height: '36px',
+    borderRadius: '6px',
+    border: 'none',
+    background: primary ? (disabled ? '#1e293b' : '#3b82f6') : '#1e293b',
+    color: disabled ? '#475569' : '#f8fafc',
     cursor: disabled ? 'not-allowed' : 'pointer',
     transition: 'all 0.15s ease',
-    boxShadow: primary && !disabled ? '0 2px 6px rgba(10, 132, 255, 0.4)' : '0 1px 2px rgba(0, 0, 0, 0.1)'
   };
 }

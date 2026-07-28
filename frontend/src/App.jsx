@@ -105,7 +105,7 @@ export default function App() {
       }
       setCurrentStep(0);
     } catch (err) {
-      setError(err.message || 'Failed to communicate with the backendd.');
+      setError(err.message || 'Failed to communicate with the backend.');
     } finally {
       setLoading(false);
     }
@@ -148,14 +148,8 @@ export default function App() {
     <div className="app-root">
       {/* ── Navbar ── */}
       <header className="navbar">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {/* macOS window control buttons */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginRight: '6px' }}>
-            <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ff5f56', border: '1px solid #e0443e', display: 'inline-block' }}></span>
-            <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ffbd2e', border: '1px solid #dea123', display: 'inline-block' }}></span>
-            <span style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#27c93f', border: '1px solid #1aab29', display: 'inline-block' }}></span>
-          </div>
-          <Code2 size={20} color="#60a5fa" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Code2 size={22} color="#3b82f6" />
           <span className="navbar-title">
             CODBEE <span className="navbar-badge">Java Tutor</span>
           </span>
