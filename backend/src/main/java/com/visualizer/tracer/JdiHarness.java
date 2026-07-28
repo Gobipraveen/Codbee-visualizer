@@ -225,7 +225,7 @@ public class JdiHarness {
                         List<LocalVariable> visVars = frame.visibleVariables();
                         for (LocalVariable var : visVars) {
                             Value val = frame.getValue(var);
-                            ValueDto valDto = inspectValue(val, heapMap);
+                            ValueDto valDto = HeapInspector.inspectValue(val, heapMap);
                             variables.put(var.name(), valDto);
                         }
                     } catch (Exception ignored) {
@@ -238,71 +238,6 @@ public class JdiHarness {
         }
 
         return new TraceStep(stepNum, location.lineNumber(), stackList, heapMap, currentStdout);
-    }
-
-    private ValueDto inspectValue(Value value, Map<String, HeapObjectDto> heapMap) {
-        if (value == null) {
-            return new ValueDto("null", null);
-        }
-
-        if (value instanceof PrimitiveValue pv) {
-            return new ValueDto("primitive", extractPrimitive(pv));
-        }
-
-        if (value instanceof StringReference sr) {
-            return new ValueDto("string", sr.value());
-        }
-
-        if (value instanceof ArrayReference ar) {
-            String refId = "ref_" + ar.uniqueID();
-            if (!heapMap.containsKey(refId)) {
-                HeapObjectDto arrayObj = new HeapObjectDto(refId, ar.referenceType().name(), new LinkedHashMap<>());
-                heapMap.put(refId, arrayObj);
-
-                List<Value> elements = ar.getValues();
-                for (int i = 0; i < elements.size(); i++) {
-                    Value elementValue = elements.get(i);
-                    ValueDto elementDto = inspectValue(elementValue, heapMap);
-                    arrayObj.getFields().put("[" + i + "]", elementDto);
-                }
-            }
-            return new ValueDto("reference", refId);
-        }
-
-        if (value instanceof ObjectReference objRef) {
-            String refId = "ref_" + objRef.uniqueID();
-            if (!heapMap.containsKey(refId)) {
-                HeapObjectDto heapObj = new HeapObjectDto(refId, objRef.referenceType().name(), new LinkedHashMap<>());
-                heapMap.put(refId, heapObj);
-
-                try {
-                    List<Field> fields = objRef.referenceType().allFields();
-                    for (Field field : fields) {
-                        if (!field.isStatic()) {
-                            Value fieldValue = objRef.getValue(field);
-                            ValueDto fieldDto = inspectValue(fieldValue, heapMap);
-                            heapObj.getFields().put(field.name(), fieldDto);
-                        }
-                    }
-                } catch (Exception ignored) {
-                }
-            }
-            return new ValueDto("reference", refId);
-        }
-
-        return new ValueDto("unknown", value.toString());
-    }
-
-    private Object extractPrimitive(PrimitiveValue pv) {
-        if (pv instanceof BooleanValue bv) return bv.value();
-        if (pv instanceof IntegerValue iv) return iv.value();
-        if (pv instanceof LongValue lv) return lv.value();
-        if (pv instanceof DoubleValue dv) return dv.value();
-        if (pv instanceof FloatValue fv) return fv.value();
-        if (pv instanceof CharValue cv) return cv.value();
-        if (pv instanceof ByteValue bv) return bv.value();
-        if (pv instanceof ShortValue sv) return sv.value();
-        return pv.toString();
     }
 
     private void deleteDirectory(File dir) {

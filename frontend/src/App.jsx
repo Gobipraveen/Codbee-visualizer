@@ -29,6 +29,44 @@ function detectException(errorMsg) {
   return null;
 }
 
+// ─── Fallback Type Inference Helper ──────────────────────────────────────────
+
+function preprocessTrace(trace) {
+  if (!trace) return [];
+  return trace.map((step) => {
+    if (!step.heap) return step;
+    const newHeap = {};
+    for (const [ref, obj] of Object.entries(step.heap)) {
+      let visualType = obj.visualType;
+      if (!visualType || visualType === 'object') {
+        const type = obj.type || '';
+        const fields = Object.keys(obj.fields || {});
+        if (type.endsWith('[]')) {
+          visualType = 'array';
+        } else if (fields.includes('left') && fields.includes('right')) {
+          visualType = 'tree_node';
+        } else if (fields.includes('next') && (fields.includes('val') || fields.includes('value') || fields.includes('data') || fields.includes('key'))) {
+          visualType = 'linked_list';
+        } else if (type.includes('ArrayList') || type.includes('Vector')) {
+          visualType = 'list';
+        } else if (type.includes('HashSet') || type.includes('TreeSet')) {
+          visualType = 'set';
+        } else if (type.includes('HashMap') || type.includes('TreeMap')) {
+          visualType = 'map';
+        } else if (type.includes('Stack')) {
+          visualType = 'stack';
+        } else if (type.includes('Deque') || type.includes('Queue')) {
+          visualType = 'queue';
+        } else if (type.includes('StringBuilder') || type.includes('StringBuffer')) {
+          visualType = 'string_builder';
+        }
+      }
+      newHeap[ref] = { ...obj, visualType: visualType || 'object' };
+    }
+    return { ...step, heap: newHeap };
+  });
+}
+
 // ─── Main App Component ──────────────────────────────────────────────────────
 
 export default function App() {
@@ -113,9 +151,11 @@ export default function App() {
 
       const data = await response.json().catch(() => ({}));
 
+      const processedTrace = preprocessTrace(data.trace || []);
+
       if (!response.ok) {
         setError(data.error || `HTTP ${response.status}`);
-        setTrace(data.trace || []);
+        setTrace(processedTrace);
         return;
       }
 
@@ -126,9 +166,9 @@ export default function App() {
         } else {
           setError(data.error);
         }
-        setTrace(data.trace || []);
+        setTrace(processedTrace);
       } else {
-        setTrace(data.trace || []);
+        setTrace(processedTrace);
       }
       setCurrentStep(0);
     } catch (err) {

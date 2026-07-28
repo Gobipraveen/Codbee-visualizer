@@ -29,6 +29,97 @@ export const EXAMPLES = [
 }`,
   },
   {
+    id: 'binary-tree',
+    label: 'Binary Tree',
+    className: 'BinaryTreeDemo',
+    code: `public class BinaryTreeDemo {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+
+        TreeNode(int val) {
+            this.val = val;
+        }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(10);
+        root.left = new TreeNode(5);
+        root.right = new TreeNode(15);
+        root.left.left = new TreeNode(2);
+
+        System.out.println("Root val: " + root.val);
+        System.out.println("Left child: " + root.left.val);
+        System.out.println("Right child: " + root.right.val);
+    }
+}`,
+  },
+  {
+    id: 'stack-queue',
+    label: 'Stack & Queue',
+    className: 'StackQueueDemo',
+    code: `import java.util.Stack;
+import java.util.ArrayDeque;
+
+public class StackQueueDemo {
+    public static void main(String[] args) {
+        Stack<Integer> stack = new Stack<>();
+        stack.push(10);
+        stack.push(20);
+        stack.push(30);
+
+        ArrayDeque<String> queue = new ArrayDeque<>();
+        queue.add("first");
+        queue.add("second");
+        queue.add("third");
+
+        System.out.println("Stack top: " + stack.peek());
+        System.out.println("Queue front: " + queue.peek());
+    }
+}`,
+  },
+  {
+    id: 'collections',
+    label: 'Map, Set & List',
+    className: 'CollectionDemo',
+    code: `import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+
+public class CollectionDemo {
+    public static void main(String[] args) {
+        ArrayList<String> list = new ArrayList<>();
+        list.add("Java");
+        list.add("Python");
+
+        HashMap<String, Integer> map = new HashMap<>();
+        map.put("score1", 100);
+        map.put("score2", 200);
+
+        HashSet<Integer> set = new HashSet<>();
+        set.add(42);
+        set.add(99);
+
+        System.out.println("List size: " + list.size());
+        System.out.println("Map size: " + map.size());
+        System.out.println("Set size: " + set.size());
+    }
+}`,
+  },
+  {
+    id: 'string-builder',
+    label: 'StringBuilder',
+    className: 'StringBuilderDemo',
+    code: `public class StringBuilderDemo {
+    public static void main(String[] args) {
+        StringBuilder sb = new StringBuilder("CODE");
+        sb.append("BEE");
+        System.out.println("Result: " + sb.toString());
+    }
+}`,
+  },
+  {
     id: 'for-loop',
     label: 'For Loop / Sum',
     className: 'ForLoopDemo',

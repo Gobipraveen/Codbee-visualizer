@@ -1,24 +1,8 @@
 import React, { useRef } from 'react';
-import { Layers, Database, Link as LinkIcon } from 'lucide-react';
+import { Layers, Database } from 'lucide-react';
 import HeapGraphSvgOverlay from './HeapGraphSvgOverlay';
-
-// ─── Type classification helpers ───────────────────────────────────────────
-
-function isArrayType(type) {
-  return type && type.endsWith('[]');
-}
-
-function isArrayList(type) {
-  return type && (type === 'java.util.ArrayList' || type.includes('ArrayList'));
-}
-
-function isHashMap(type) {
-  return type && (type === 'java.util.HashMap' || type.includes('HashMap') || type.includes('LinkedHashMap'));
-}
-
-function isString(type) {
-  return type === 'java.lang.String';
-}
+import HeapCardFactory from './visuals/HeapCardFactory';
+import { RenderValue, cleanClassName } from './visuals/RenderValue';
 
 // ─── Main Panel ─────────────────────────────────────────────────────────────
 
@@ -33,7 +17,7 @@ export default function StackHeapPanel({ stepData }) {
       style={{
         position: 'relative',
         display: 'grid',
-        gridTemplateColumns: '45% 55%',
+        gridTemplateColumns: '35% 65%',
         gap: '12px',
         height: '100%',
         width: '100%',
@@ -89,12 +73,12 @@ export default function StackHeapPanel({ stepData }) {
           <Database size={15} color="#10b981" />
           <span>Heap Objects</span>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: '10px', alignContent: 'start' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: '12px', alignContent: 'start' }}>
           {Object.keys(heapMap).length === 0 ? (
             <div style={{ ...emptyTextStyle, gridColumn: '1 / -1' }}>No heap objects allocated</div>
           ) : (
             Object.entries(heapMap).map(([heapId, objDto]) => (
-              <HeapCard key={heapId} heapId={heapId} objDto={objDto} />
+              <HeapCardFactory key={heapId} heapId={heapId} objDto={objDto} />
             ))
           )}
         </div>
@@ -243,72 +227,7 @@ function HeapCardHeader({ heapId, label, badge }) {
   );
 }
 
-// ─── RenderValue ─────────────────────────────────────────────────────────────
-
-export function RenderValue({ valDto, sourceId }) {
-  if (!valDto) return <span style={{ color: '#64748b' }}>null</span>;
-
-  if (valDto.type === 'reference') {
-    const targetRef = String(valDto.value);
-    return (
-      <span
-        data-ref-target={targetRef}
-        data-source-id={sourceId}
-        style={{
-          color: '#c084fc',
-          background: 'rgba(192,132,252,0.15)',
-          border: '1px solid rgba(192,132,252,0.4)',
-          borderRadius: '12px',
-          padding: '2px 8px',
-          fontSize: '11px',
-          fontFamily: 'monospace',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '4px',
-          cursor: 'default',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        <LinkIcon size={10} />
-        {targetRef}
-      </span>
-    );
-  }
-
-  if (valDto.type === 'string') {
-    return (
-      <span style={{ color: '#fde047', fontFamily: 'monospace', fontSize: '12px' }}>
-        &ldquo;{String(valDto.value).length > 24 ? valDto.value.substring(0, 24) + '…' : valDto.value}&rdquo;
-      </span>
-    );
-  }
-
-  if (valDto.type === 'null') {
-    return <span style={{ color: '#64748b', fontFamily: 'monospace' }}>null</span>;
-  }
-
-  if (valDto.type === 'primitive') {
-    const v = valDto.value;
-    // Boolean coloring
-    if (v === true || v === false) {
-      return <span style={{ color: v ? '#4ade80' : '#f87171', fontFamily: 'monospace' }}>{String(v)}</span>;
-    }
-    return <span style={{ color: '#38bdf8', fontFamily: 'monospace' }}>{String(v)}</span>;
-  }
-
-  return <span style={{ color: '#94a3b8', fontFamily: 'monospace' }}>{String(valDto.value)}</span>;
-}
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function cleanClassName(fullName) {
-  if (!fullName) return '';
-  // strip package
-  const parts = fullName.split('.');
-  const lastPart = parts[parts.length - 1];
-  // handle inner class suffix (e.g. LinkedListDemo$Node → Node)
-  return lastPart.includes('$') ? lastPart.split('$').pop() : lastPart;
-}
+// ─── Helpers & Styles ────────────────────────────────────────────────────────
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
