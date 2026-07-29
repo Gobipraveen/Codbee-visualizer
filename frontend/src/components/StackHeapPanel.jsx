@@ -4,6 +4,8 @@ import HeapGraphSvgOverlay from './HeapGraphSvgOverlay';
 import HeapCardFactory from './visuals/HeapCardFactory';
 import { RenderValue, cleanClassName } from './visuals/RenderValue';
 
+import RecursiveCallStack from './RecursiveCallStack';
+
 // ─── Main Panel ─────────────────────────────────────────────────────────────
 
 export default function StackHeapPanel({ stepData }) {
@@ -29,42 +31,7 @@ export default function StackHeapPanel({ stepData }) {
 
       {/* ── Stack Panel ── */}
       <div style={panelCardStyle}>
-        <div style={panelHeaderStyle}>
-          <Layers size={15} color="#3b82f6" />
-          <span>Call Stack</span>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          {stack.length === 0 ? (
-            <div style={emptyTextStyle}>No active call frames</div>
-          ) : (
-            stack.map((frame, idx) => (
-              <div key={idx} style={idx === 0 ? activeFrameCardStyle : frameCardStyle}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px', borderBottom: '1px solid #334155', paddingBottom: '4px' }}>
-                  <span style={{ fontWeight: 600, color: idx === 0 ? '#93c5fd' : '#60a5fa', fontSize: '12px' }}>
-                    {cleanClassName(frame.className)}.{frame.methodName}()
-                  </span>
-                  <span style={{ fontSize: '11px', color: '#94a3b8', background: '#0f172a', padding: '2px 6px', borderRadius: '4px' }}>
-                    line {frame.line}
-                  </span>
-                </div>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                  <tbody>
-                    {Object.entries(frame.variables || {}).map(([varName, valDto]) => (
-                      <tr key={varName} style={{ borderBottom: '1px dotted #1e293b' }}>
-                        <td style={{ padding: '4px 0', color: '#cbd5e1', fontFamily: 'monospace', fontWeight: 500 }}>
-                          {varName}
-                        </td>
-                        <td style={{ padding: '4px 0', textAlign: 'right' }}>
-                          <RenderValue valDto={valDto} sourceId={`stack-${idx}-${varName}`} />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ))
-          )}
-        </div>
+        <RecursiveCallStack stack={stack} />
       </div>
 
       {/* ── Heap Panel ── */}
