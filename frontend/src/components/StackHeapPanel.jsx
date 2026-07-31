@@ -1,17 +1,69 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Layers, Database } from 'lucide-react';
 import HeapGraphSvgOverlay from './HeapGraphSvgOverlay';
 import HeapCardFactory from './visuals/HeapCardFactory';
 import { RenderValue, cleanClassName } from './visuals/RenderValue';
 
-import RecursiveCallStack from './RecursiveCallStack';
+// ─── Color Palette per Depth ──────────────────────────────────────────────────
+
+const DEPTH_THEMES = [
+  { border: '#3b82f6', headerBg: 'rgba(59, 130, 246, 0.15)', text: '#93c5fd', badgeBg: 'rgba(59, 130, 246, 0.25)', badgeText: '#60a5fa' }, // Depth 0 (Blue)
+  { border: '#06b6d4', headerBg: 'rgba(6, 182, 212, 0.15)', text: '#67e8f9', badgeBg: 'rgba(6, 182, 212, 0.25)', badgeText: '#22d3ee' },  // Depth 1 (Cyan)
+  { border: '#10b981', headerBg: 'rgba(16, 185, 129, 0.15)', text: '#6ee7b7', badgeBg: 'rgba(16, 185, 129, 0.25)', badgeText: '#34d399' }, // Depth 2 (Green)
+  { border: '#f59e0b', headerBg: 'rgba(245, 158, 11, 0.15)', text: '#fde047', badgeBg: 'rgba(245, 158, 11, 0.25)', badgeText: '#fbbf24' }, // Depth 3 (Amber)
+  { border: '#a855f7', headerBg: 'rgba(168, 85, 247, 0.15)', text: '#c084fc', badgeBg: 'rgba(168, 85, 247, 0.25)', badgeText: '#c084fc' }, // Depth 4 (Purple)
+  { border: '#ec4899', headerBg: 'rgba(236, 72, 153, 0.15)', text: '#f472b6', badgeBg: 'rgba(236, 72, 153, 0.25)', badgeText: '#f472b6' }, // Depth 5+ (Pink)
+];
+
+function getDepthTheme(depth) {
+  return DEPTH_THEMES[Math.min(depth, DEPTH_THEMES.length - 1)];
+}
+
+// ─── Format Method Name + Arguments Header ────────────────────────────────────
+
+function formatMethodCallHeader(frame) {
+  const methodName = frame.methodName || 'method';
+  const variables = frame.variables || {};
+  const argList = [];
+
+  for (const [varName, valDto] of Object.entries(variables)) {
+    let valStr = '';
+    if (valDto?.type === 'primitive') {
+      valStr = String(valDto.value);
+    } else if (valDto?.type === 'string') {
+      valStr = `"${valDto.value}"`;
+    } else if (valDto?.type === 'reference') {
+      valStr = String(valDto.value);
+    } else if (valDto?.type === 'null') {
+      valStr = 'null';
+    } else {
+      valStr = String(valDto?.value ?? '');
+    }
+    argList.push(`${varName}=${valStr}`);
+  }
+
+  const argsFormatted = argList.length > 0 ? argList.join(', ') : '';
+  return `${cleanClassName(frame.className)}.${methodName}(${argsFormatted})`;
+}
 
 // ─── Main Panel ─────────────────────────────────────────────────────────────
 
 export default function StackHeapPanel({ stepData }) {
   const containerRef = useRef(null);
+  const activeFrameRef = useRef(null);
   const stack = stepData?.stack || [];
   const heapMap = stepData?.heap || {};
+
+  // Auto-scroll active (top) frame into view when step changes
+  useEffect(() => {
+    if (activeFrameRef.current) {
+      activeFrameRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [stepData]);
+
+  // Stack is returned with stack[0] as top (most recent frame).
+  // Calculate depth relative to root caller (main at bottom = depth 0).
+  const totalFrames = stack.length;
 
   return (
     <div
@@ -19,7 +71,7 @@ export default function StackHeapPanel({ stepData }) {
       style={{
         position: 'relative',
         display: 'grid',
-        gridTemplateColumns: '35% 65%',
+        gridTemplateColumns: '38% 62%',
         gap: '12px',
         height: '100%',
         width: '100%',
@@ -31,7 +83,131 @@ export default function StackHeapPanel({ stepData }) {
 
       {/* ── Stack Panel ── */}
       <div style={panelCardStyle}>
-        <RecursiveCallStack stack={stack} />
+        <div style={panelHeaderStyle}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Layers size={15} color="#3b82f6" />
+            <span>Call Stack</span>
+          </div>
+          {totalFrames > 0 && (
+            <span style={{ fontSize: '10px', color: '#93c5fd', background: 'rgba(59, 130, 246, 0.15)', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
+              Depth: {totalFrames}
+            </span>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', overflowY: 'auto', paddingRight: '2px', flex: 1 }}>
+          {totalFrames === 0 ? (
+            <div style={emptyTextStyle}>No active call frames</div>
+          ) : (
+            stack.map((frame, idx) => {
+              const isTop = idx === 0;
+              const depth = totalFrames - 1 - idx; // depth 0 for main, depth 1+ for nested/recursive calls
+              const theme = getDepthTheme(depth);
+              const indentPx = Math.min(depth * 14, 84); // cascading offset capped at 84px
+
+              return (
+                <div
+                  key={idx}
+                  ref={isTop ? activeFrameRef : null}
+                  className={isTop ? 'stack-frame-card-active' : 'stack-frame-card'}
+                  style={{
+                    marginLeft: `${indentPx}px`,
+                    background: '#121826',
+                    borderRadius: '8px',
+                    border: isTop ? `2px solid ${theme.border}` : `1px solid ${theme.border}`,
+                    boxShadow: isTop ? `0 0 12px ${theme.border}33` : '0 2px 6px rgba(0,0,0,0.2)',
+                    padding: '8px 10px',
+                    position: 'relative',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  {/* Cascading Tree Connector Guide for Nested Frames */}
+                  {depth > 0 && (
+                    <span
+                      style={{
+                        position: 'absolute',
+                        left: '-12px',
+                        top: '12px',
+                        color: theme.border,
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        pointerEvents: 'none',
+                        fontFamily: 'monospace',
+                      }}
+                    >
+                      └──
+                    </span>
+                  )}
+
+                  {/* Header Bar */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid #1e293b', paddingBottom: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
+                      {/* Depth Badge */}
+                      <span
+                        style={{
+                          fontSize: '9px',
+                          fontWeight: 700,
+                          color: theme.badgeText,
+                          background: theme.badgeBg,
+                          padding: '1px 5px',
+                          borderRadius: '4px',
+                          fontFamily: 'monospace',
+                          flexShrink: 0,
+                        }}
+                      >
+                        #{depth}
+                      </span>
+
+                      {/* Method Call Name & Parameters */}
+                      <span
+                        style={{
+                          fontWeight: 600,
+                          color: theme.text,
+                          fontSize: '12px',
+                          fontFamily: 'monospace',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                        title={formatMethodCallHeader(frame)}
+                      >
+                        {formatMethodCallHeader(frame)}
+                      </span>
+                    </div>
+
+                    {/* Active Tag & Line Number */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                      {isTop && (
+                        <span style={{ fontSize: '9px', fontWeight: 700, color: '#38bdf8', background: 'rgba(56, 189, 248, 0.2)', padding: '1px 5px', borderRadius: '4px' }}>
+                          TOP
+                        </span>
+                      )}
+                      <span style={{ fontSize: '11px', color: '#94a3b8', background: '#0f172a', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace' }}>
+                        line {frame.line}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Variables Table */}
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                    <tbody>
+                      {Object.entries(frame.variables || {}).map(([varName, valDto]) => (
+                        <tr key={varName} style={{ borderBottom: '1px dotted #1e293b' }}>
+                          <td style={{ padding: '3px 0', color: '#cbd5e1', fontFamily: 'monospace', fontWeight: 500 }}>
+                            {varName}
+                          </td>
+                          <td style={{ padding: '3px 0', textAlign: 'right' }}>
+                            <RenderValue valDto={valDto} sourceId={`stack-${idx}-${varName}`} />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })
+          )}
+        </div>
       </div>
 
       {/* ── Heap Panel ── */}
@@ -54,148 +230,6 @@ export default function StackHeapPanel({ stepData }) {
   );
 }
 
-// ─── HeapCard: smart rendering based on type ────────────────────────────────
-
-function HeapCard({ heapId, objDto }) {
-  const { type, fields } = objDto;
-
-  // Arrays: render as index-row boxes
-  if (isArrayType(type)) {
-    return <ArrayCard heapId={heapId} type={type} fields={fields} />;
-  }
-
-  // ArrayList: show size + elements readable
-  if (isArrayList(type)) {
-    return <CollectionCard heapId={heapId} type="ArrayList" fields={fields} />;
-  }
-
-  // HashMap / LinkedHashMap
-  if (isHashMap(type)) {
-    return <CollectionCard heapId={heapId} type="HashMap" fields={fields} />;
-  }
-
-  // Default: generic object card
-  return (
-    <div data-heap-card-id={heapId} style={heapCardStyle}>
-      <HeapCardHeader heapId={heapId} label={cleanClassName(type)} />
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-        <tbody>
-          {Object.entries(fields || {}).map(([fieldName, valDto]) => (
-            <tr key={fieldName} style={{ borderBottom: '1px dotted #1e293b' }}>
-              <td style={{ padding: '3px 0', color: '#94a3b8', fontFamily: 'monospace' }}>{fieldName}</td>
-              <td style={{ padding: '3px 0', textAlign: 'right' }}>
-                <RenderValue valDto={valDto} sourceId={`heap-${heapId}-${fieldName}`} />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function ArrayCard({ heapId, type, fields }) {
-  const elementType = type.replace('[]', '');
-  const entries = Object.entries(fields || {}).sort((a, b) => {
-    const ai = parseInt(a[0].replace(/[\[\]]/g, ''), 10);
-    const bi = parseInt(b[0].replace(/[\[\]]/g, ''), 10);
-    return ai - bi;
-  });
-
-  return (
-    <div data-heap-card-id={heapId} style={{ ...heapCardStyle, gridColumn: entries.length > 6 ? '1 / -1' : undefined }}>
-      <HeapCardHeader heapId={heapId} label={`${cleanClassName(elementType)}[]`} />
-      {entries.length === 0 ? (
-        <span style={{ color: '#64748b', fontSize: '11px', fontStyle: 'italic' }}>empty array</span>
-      ) : (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '4px' }}>
-          {entries.map(([idx, valDto]) => (
-            <div
-              key={idx}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                minWidth: '32px',
-              }}
-            >
-              <div
-                style={{
-                  border: '1px solid #334155',
-                  background: '#1e293b',
-                  borderRadius: '4px',
-                  padding: '3px 6px',
-                  fontSize: '11px',
-                  fontFamily: 'monospace',
-                }}
-              >
-                <RenderValue valDto={valDto} sourceId={`heap-${heapId}-${idx}`} />
-              </div>
-              <span style={{ fontSize: '10px', color: '#64748b', marginTop: '1px' }}>{idx}</span>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function CollectionCard({ heapId, type, fields }) {
-  // Try to extract meaningful content from internal fields
-  // ArrayList has elementData (array ref) and size
-  const sizeField = fields['size'];
-  const size = sizeField ? sizeField.value : null;
-
-  // For non-String[] refs we just list non-internal fields
-  const displayFields = Object.entries(fields || {}).filter(
-    ([k]) => !['serialVersionUID', 'DEFAULT_CAPACITY', 'EMPTY_ELEMENTDATA', 'DEFAULTCAPACITY_EMPTY_ELEMENTDATA', 'MAX_ARRAY_SIZE', 'modCount', 'threshold', 'loadFactor', 'table', 'entrySet', 'keySet', 'values'].includes(k)
-  );
-
-  return (
-    <div data-heap-card-id={heapId} style={heapCardStyle}>
-      <HeapCardHeader
-        heapId={heapId}
-        label={type}
-        badge={size != null ? `size=${size}` : null}
-      />
-      {displayFields.length === 0 ? (
-        <span style={{ color: '#64748b', fontSize: '11px', fontStyle: 'italic' }}>
-          {type} (internal fields hidden)
-        </span>
-      ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-          <tbody>
-            {displayFields.map(([fieldName, valDto]) => (
-              <tr key={fieldName} style={{ borderBottom: '1px dotted #1e293b' }}>
-                <td style={{ padding: '3px 0', color: '#94a3b8', fontFamily: 'monospace' }}>{fieldName}</td>
-                <td style={{ padding: '3px 0', textAlign: 'right' }}>
-                  <RenderValue valDto={valDto} sourceId={`heap-${heapId}-${fieldName}`} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </div>
-  );
-}
-
-function HeapCardHeader({ heapId, label, badge }) {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', borderBottom: '1px solid #334155', paddingBottom: '4px', flexWrap: 'wrap', gap: '4px' }}>
-      <span style={{ fontWeight: 700, color: '#34d399', fontSize: '12px', fontFamily: 'monospace' }}>
-        {label}
-        {badge && <span style={{ marginLeft: '6px', fontSize: '10px', color: '#94a3b8' }}>{badge}</span>}
-      </span>
-      <span style={{ fontSize: '10px', color: '#a78bfa', background: 'rgba(167,139,250,0.15)', padding: '1px 5px', borderRadius: '4px' }}>
-        {heapId}
-      </span>
-    </div>
-  );
-}
-
-// ─── Helpers & Styles ────────────────────────────────────────────────────────
-
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const panelCardStyle = {
@@ -211,7 +245,7 @@ const panelCardStyle = {
 const panelHeaderStyle = {
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  justifyContent: 'space-between',
   fontWeight: 600,
   fontSize: '11px',
   color: '#f8fafc',
@@ -219,26 +253,6 @@ const panelHeaderStyle = {
   textTransform: 'uppercase',
   letterSpacing: '0.5px',
   flexShrink: 0,
-};
-
-const frameCardStyle = {
-  background: '#1e293b',
-  borderRadius: '6px',
-  padding: '8px 10px',
-  border: '1px solid #334155',
-};
-
-const activeFrameCardStyle = {
-  ...frameCardStyle,
-  border: '1px solid #3b82f6',
-  boxShadow: '0 0 0 1px rgba(59,130,246,0.2)',
-};
-
-const heapCardStyle = {
-  background: '#0f172a',
-  borderRadius: '6px',
-  padding: '8px 10px',
-  border: '1px solid #334155',
 };
 
 const emptyTextStyle = {
