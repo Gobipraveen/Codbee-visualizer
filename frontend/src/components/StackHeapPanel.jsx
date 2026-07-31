@@ -66,14 +66,27 @@ export default function StackHeapPanel({ stepData }) {
 
   const totalFrames = stack.length;
 
+  // Separate heap objects into Main Containers (Col 1) and Primitive Values (Col 2)
+  const containers = [];
+  const primitives = [];
+
+  Object.entries(heapMap).forEach(([heapId, objDto]) => {
+    const isPrim = objDto.visualType === 'primitive_wrapper' || objDto.visualType === 'string';
+    if (isPrim) {
+      primitives.push([heapId, objDto]);
+    } else {
+      containers.push([heapId, objDto]);
+    }
+  });
+
   return (
     <div
       ref={containerRef}
       style={{
         position: 'relative',
         display: 'grid',
-        gridTemplateColumns: '38% 62%',
-        gap: '12px',
+        gridTemplateColumns: '36% 64%',
+        gap: '14px',
         height: '100%',
         width: '100%',
         overflowY: 'auto',
@@ -215,31 +228,61 @@ export default function StackHeapPanel({ stepData }) {
         </div>
       </div>
 
-      {/* ── Heap Panel ── */}
+      {/* ── Heap Panel (Structured 2-Column Layout: Main Containers Left, Primitive Values Right) ── */}
       <div style={panelCardStyle}>
         <div style={panelHeaderStyle}>
           <Database size={15} color="#10b981" />
           <span>Heap Objects</span>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px, 1fr))', gap: '12px', alignContent: 'start' }}>
-          {Object.keys(heapMap).length === 0 ? (
-            <div style={{ ...emptyTextStyle, gridColumn: '1 / -1' }}>No heap objects allocated</div>
-          ) : (
-            <AnimatePresence mode="popLayout">
-              {Object.entries(heapMap).map(([heapId, objDto]) => (
-                <motion.div
-                  key={heapId}
-                  initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.85 }}
-                  transition={{ duration, ease: 'easeOut' }}
-                >
-                  <HeapCardFactory heapId={heapId} objDto={objDto} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          )}
-        </div>
+
+        {Object.keys(heapMap).length === 0 ? (
+          <div style={emptyTextStyle}>No heap objects allocated</div>
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: primitives.length > 0 ? '58% 42%' : 'repeat(auto-fill, minmax(220px, 280px))',
+              gap: '14px',
+              alignContent: 'start',
+            }}
+          >
+            {/* Column 1: Main Containers & Data Structures */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <AnimatePresence mode="popLayout">
+                {containers.map(([heapId, objDto]) => (
+                  <motion.div
+                    key={heapId}
+                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.85 }}
+                    transition={{ duration, ease: 'easeOut' }}
+                  >
+                    <HeapCardFactory heapId={heapId} objDto={objDto} />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+
+            {/* Column 2: Primitive Wrappers & Strings */}
+            {primitives.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'flex-start' }}>
+                <AnimatePresence mode="popLayout">
+                  {primitives.map(([heapId, objDto]) => (
+                    <motion.div
+                      key={heapId}
+                      initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.85 }}
+                      transition={{ duration, ease: 'easeOut' }}
+                    >
+                      <HeapCardFactory heapId={heapId} objDto={objDto} />
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
