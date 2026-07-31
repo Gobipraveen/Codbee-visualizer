@@ -1,12 +1,19 @@
 import React from 'react';
 import { RenderValue, cleanClassName } from './RenderValue';
+import { motion } from 'framer-motion';
+import { useAnimationSettings } from '../../context/AnimationSettingsContext';
 
 export default function PrimitiveWrapperVisual({ heapId, objDto }) {
   const valDto = objDto?.fields?.value;
+  const { duration } = useAnimationSettings();
 
   return (
-    <div
+    <motion.div
       data-heap-card-id={heapId}
+      initial={{ opacity: 0, scale: 0.9, y: 10 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.85 }}
+      transition={{ duration, ease: 'easeOut' }}
       style={{
         background: '#121826',
         borderRadius: '20px',
@@ -23,6 +30,6 @@ export default function PrimitiveWrapperVisual({ heapId, objDto }) {
       </span>
       <RenderValue valDto={valDto} sourceId={`${heapId}-val`} />
       <span style={{ fontSize: '9px', color: '#64748b', marginLeft: '4px' }}>({heapId})</span>
-    </div>
+    </motion.div>
   );
 }

@@ -3,7 +3,9 @@ import CodeEditor from './components/CodeEditor';
 import SteppingControls from './components/SteppingControls';
 import VisualizationCanvas from './components/VisualizationCanvas';
 import StdoutDrawer from './components/StdoutDrawer';
-import { Play, AlertCircle, Loader2, Code2, Share2, CheckCheck, ChevronDown, PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import SettingsModal from './components/SettingsModal';
+import { AnimationSettingsProvider } from './context/AnimationSettingsContext';
+import { Play, AlertCircle, Loader2, Code2, Share2, CheckCheck, ChevronDown, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-react';
 import { EXAMPLES } from './examples';
 import { buildShareableUrl, readCodeFromUrlParam } from './shareLink';
 
@@ -69,7 +71,7 @@ function preprocessTrace(trace) {
 
 // ─── Main App Component ──────────────────────────────────────────────────────
 
-export default function App() {
+function MainApp() {
   const defaultCode = readCodeFromUrlParam() || EXAMPLES[0].code;
 
   const [code, setCode] = useState(defaultCode);
@@ -80,6 +82,7 @@ export default function App() {
   const [exception, setException] = useState(null);
   const [shareStatus, setShareStatus] = useState('idle');
   const [exampleOpen, setExampleOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const exampleRef = useRef(null);
 
   // Left Panel Resizing & Collapsing State
@@ -283,6 +286,19 @@ export default function App() {
             )}
           </button>
 
+          {/* Settings Gear Button */}
+          <div style={{ position: 'relative' }}>
+            <button
+              className="btn btn-ghost"
+              onClick={() => setIsSettingsOpen((s) => !s)}
+              title="Visualization Settings"
+              style={{ padding: '6px 10px' }}
+            >
+              <Settings size={15} />
+            </button>
+            <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+          </div>
+
           {/* Visualize Execution button */}
           <button
             className="btn btn-primary"
@@ -369,5 +385,13 @@ export default function App() {
       {/* ── Bottom Drawer: Standard Output (stdout) ── */}
       <StdoutDrawer stdout={currentStepData?.stdout || ''} />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AnimationSettingsProvider>
+      <MainApp />
+    </AnimationSettingsProvider>
   );
 }

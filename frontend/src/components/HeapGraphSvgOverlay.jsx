@@ -1,7 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAnimationSettings } from '../context/AnimationSettingsContext';
 
 export default function HeapGraphSvgOverlay({ containerRef, stepData }) {
   const [arrows, setArrows] = useState([]);
+  const { duration } = useAnimationSettings();
 
   const recalculateArrows = () => {
     if (!containerRef.current) return;
@@ -39,8 +42,10 @@ export default function HeapGraphSvgOverlay({ containerRef, stepData }) {
 
       const pathData = `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
 
+      const sourceId = sourceEl.getAttribute('data-source-id') || 'src';
+
       newArrows.push({
-        id: `${sourceEl.getAttribute('data-source-id') || Math.random()}-${targetId}`,
+        id: `${sourceId}->${targetId}`,
         pathData,
         x1, y1, x2, y2
       });
@@ -83,18 +88,22 @@ export default function HeapGraphSvgOverlay({ containerRef, stepData }) {
           <polygon points="0 0, 8 3, 0 6" fill="#a78bfa" />
         </marker>
       </defs>
-      {arrows.map((arrow) => (
-        <path
-          key={arrow.id}
-          d={arrow.pathData}
-          fill="none"
-          stroke="#a78bfa"
-          strokeWidth="2"
-          strokeDasharray="4 2"
-          markerEnd="url(#arrowhead)"
-          style={{ transition: 'd 0.2s ease-in-out' }}
-        />
-      ))}
+      <AnimatePresence>
+        {arrows.map((arrow) => (
+          <motion.path
+            key={arrow.id}
+            initial={{ opacity: 0, pathLength: 0.2 }}
+            animate={{ opacity: 1, pathLength: 1, d: arrow.pathData }}
+            exit={{ opacity: 0 }}
+            transition={{ duration, ease: 'easeInOut' }}
+            fill="none"
+            stroke="#a78bfa"
+            strokeWidth="2"
+            strokeDasharray="4 2"
+            markerEnd="url(#arrowhead)"
+          />
+        ))}
+      </AnimatePresence>
     </svg>
   );
 }

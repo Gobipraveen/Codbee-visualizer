@@ -1,8 +1,10 @@
 import React, { useRef, useEffect } from 'react';
 import { Layers, Database } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import HeapGraphSvgOverlay from './HeapGraphSvgOverlay';
 import HeapCardFactory from './visuals/HeapCardFactory';
 import { RenderValue, cleanClassName } from './visuals/RenderValue';
+import { useAnimationSettings } from '../context/AnimationSettingsContext';
 
 // ─── Color Palette per Depth ──────────────────────────────────────────────────
 
@@ -53,6 +55,7 @@ export default function StackHeapPanel({ stepData }) {
   const activeFrameRef = useRef(null);
   const stack = stepData?.stack || [];
   const heapMap = stepData?.heap || {};
+  const { duration } = useAnimationSettings();
 
   // Auto-scroll active (top) frame into view when step changes
   useEffect(() => {
@@ -61,8 +64,6 @@ export default function StackHeapPanel({ stepData }) {
     }
   }, [stepData]);
 
-  // Stack is returned with stack[0] as top (most recent frame).
-  // Calculate depth relative to root caller (main at bottom = depth 0).
   const totalFrames = stack.length;
 
   return (
@@ -99,113 +100,117 @@ export default function StackHeapPanel({ stepData }) {
           {totalFrames === 0 ? (
             <div style={emptyTextStyle}>No active call frames</div>
           ) : (
-            stack.map((frame, idx) => {
-              const isTop = idx === 0;
-              const depth = totalFrames - 1 - idx; // depth 0 for main, depth 1+ for nested/recursive calls
-              const theme = getDepthTheme(depth);
-              const indentPx = Math.min(depth * 14, 84); // cascading offset capped at 84px
+            <AnimatePresence mode="sync">
+              {stack.map((frame, idx) => {
+                const isTop = idx === 0;
+                const depth = totalFrames - 1 - idx;
+                const theme = getDepthTheme(depth);
+                const indentPx = Math.min(depth * 14, 84);
 
-              return (
-                <div
-                  key={idx}
-                  ref={isTop ? activeFrameRef : null}
-                  className={isTop ? 'stack-frame-card-active' : 'stack-frame-card'}
-                  style={{
-                    marginLeft: `${indentPx}px`,
-                    background: '#121826',
-                    borderRadius: '8px',
-                    border: isTop ? `2px solid ${theme.border}` : `1px solid ${theme.border}`,
-                    boxShadow: isTop ? `0 0 12px ${theme.border}33` : '0 2px 6px rgba(0,0,0,0.2)',
-                    padding: '8px 10px',
-                    position: 'relative',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  {/* Cascading Tree Connector Guide for Nested Frames */}
-                  {depth > 0 && (
-                    <span
-                      style={{
-                        position: 'absolute',
-                        left: '-12px',
-                        top: '12px',
-                        color: theme.border,
-                        fontSize: '11px',
-                        fontWeight: 'bold',
-                        pointerEvents: 'none',
-                        fontFamily: 'monospace',
-                      }}
-                    >
-                      └──
-                    </span>
-                  )}
-
-                  {/* Header Bar */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid #1e293b', paddingBottom: '6px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
-                      {/* Depth Badge */}
+                return (
+                  <motion.div
+                    key={`frame-${depth}-${frame.methodName}`}
+                    initial={{ opacity: 0, y: -12, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.92 }}
+                    transition={{ duration, ease: 'easeOut' }}
+                    ref={isTop ? activeFrameRef : null}
+                    style={{
+                      marginLeft: `${indentPx}px`,
+                      background: '#121826',
+                      borderRadius: '8px',
+                      border: isTop ? `2px solid ${theme.border}` : `1px solid ${theme.border}`,
+                      boxShadow: isTop ? `0 0 12px ${theme.border}33` : '0 2px 6px rgba(0,0,0,0.2)',
+                      padding: '8px 10px',
+                      position: 'relative',
+                    }}
+                  >
+                    {/* Cascading Tree Connector Guide for Nested Frames */}
+                    {depth > 0 && (
                       <span
                         style={{
-                          fontSize: '9px',
-                          fontWeight: 700,
-                          color: theme.badgeText,
-                          background: theme.badgeBg,
-                          padding: '1px 5px',
-                          borderRadius: '4px',
+                          position: 'absolute',
+                          left: '-12px',
+                          top: '12px',
+                          color: theme.border,
+                          fontSize: '11px',
+                          fontWeight: 'bold',
+                          pointerEvents: 'none',
                           fontFamily: 'monospace',
-                          flexShrink: 0,
                         }}
                       >
-                        #{depth}
+                        └──
                       </span>
+                    )}
 
-                      {/* Method Call Name & Parameters */}
-                      <span
-                        style={{
-                          fontWeight: 600,
-                          color: theme.text,
-                          fontSize: '12px',
-                          fontFamily: 'monospace',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                        }}
-                        title={formatMethodCallHeader(frame)}
-                      >
-                        {formatMethodCallHeader(frame)}
-                      </span>
-                    </div>
-
-                    {/* Active Tag & Line Number */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-                      {isTop && (
-                        <span style={{ fontSize: '9px', fontWeight: 700, color: '#38bdf8', background: 'rgba(56, 189, 248, 0.2)', padding: '1px 5px', borderRadius: '4px' }}>
-                          TOP
+                    {/* Header Bar */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid #1e293b', paddingBottom: '6px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
+                        {/* Depth Badge */}
+                        <span
+                          style={{
+                            fontSize: '9px',
+                            fontWeight: 700,
+                            color: theme.badgeText,
+                            background: theme.badgeBg,
+                            padding: '1px 5px',
+                            borderRadius: '4px',
+                            fontFamily: 'monospace',
+                            flexShrink: 0,
+                          }}
+                        >
+                          #{depth}
                         </span>
-                      )}
-                      <span style={{ fontSize: '11px', color: '#94a3b8', background: '#0f172a', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace' }}>
-                        line {frame.line}
-                      </span>
-                    </div>
-                  </div>
 
-                  {/* Variables Table */}
-                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-                    <tbody>
-                      {Object.entries(frame.variables || {}).map(([varName, valDto]) => (
-                        <tr key={varName} style={{ borderBottom: '1px dotted #1e293b' }}>
-                          <td style={{ padding: '3px 0', color: '#cbd5e1', fontFamily: 'monospace', fontWeight: 500 }}>
-                            {varName}
-                          </td>
-                          <td style={{ padding: '3px 0', textAlign: 'right' }}>
-                            <RenderValue valDto={valDto} sourceId={`stack-${idx}-${varName}`} />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              );
-            })
+                        {/* Method Call Name & Parameters */}
+                        <span
+                          style={{
+                            fontWeight: 600,
+                            color: theme.text,
+                            fontSize: '12px',
+                            fontFamily: 'monospace',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                          title={formatMethodCallHeader(frame)}
+                        >
+                          {formatMethodCallHeader(frame)}
+                        </span>
+                      </div>
+
+                      {/* Active Tag & Line Number */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                        {isTop && (
+                          <span style={{ fontSize: '9px', fontWeight: 700, color: '#38bdf8', background: 'rgba(56, 189, 248, 0.2)', padding: '1px 5px', borderRadius: '4px' }}>
+                            TOP
+                          </span>
+                        )}
+                        <span style={{ fontSize: '11px', color: '#94a3b8', background: '#0f172a', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace' }}>
+                          line {frame.line}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Variables Table */}
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
+                      <tbody>
+                        {Object.entries(frame.variables || {}).map(([varName, valDto]) => (
+                          <tr key={varName} style={{ borderBottom: '1px dotted #1e293b' }}>
+                            <td style={{ padding: '3px 0', color: '#cbd5e1', fontFamily: 'monospace', fontWeight: 500 }}>
+                              {varName}
+                            </td>
+                            <td style={{ padding: '3px 0', textAlign: 'right' }}>
+                              <RenderValue valDto={valDto} sourceId={`stack-${idx}-${varName}`} />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
           )}
         </div>
       </div>
@@ -220,9 +225,19 @@ export default function StackHeapPanel({ stepData }) {
           {Object.keys(heapMap).length === 0 ? (
             <div style={{ ...emptyTextStyle, gridColumn: '1 / -1' }}>No heap objects allocated</div>
           ) : (
-            Object.entries(heapMap).map(([heapId, objDto]) => (
-              <HeapCardFactory key={heapId} heapId={heapId} objDto={objDto} />
-            ))
+            <AnimatePresence mode="popLayout">
+              {Object.entries(heapMap).map(([heapId, objDto]) => (
+                <motion.div
+                  key={heapId}
+                  initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.85 }}
+                  transition={{ duration, ease: 'easeOut' }}
+                >
+                  <HeapCardFactory heapId={heapId} objDto={objDto} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           )}
         </div>
       </div>

@@ -1,15 +1,22 @@
 import React from 'react';
 import { RenderValue, cleanClassName } from './RenderValue';
 import { Link2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useAnimationSettings } from '../../context/AnimationSettingsContext';
 
 export default function LinkedListVisual({ heapId, objDto }) {
   const fields = objDto?.fields || {};
   const valDto = fields.val || fields.value || fields.data || fields.item;
   const nextDto = fields.next;
+  const { duration } = useAnimationSettings();
 
   return (
-    <div
+    <motion.div
       data-heap-card-id={heapId}
+      initial={{ opacity: 0, scale: 0.9, y: 10 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.85 }}
+      transition={{ duration, ease: 'easeOut' }}
       style={{
         background: '#121826',
         borderRadius: '8px',
@@ -53,6 +60,6 @@ export default function LinkedListVisual({ heapId, objDto }) {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

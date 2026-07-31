@@ -1,9 +1,12 @@
 import React from 'react';
 import { cleanClassName } from './RenderValue';
 import { Type } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useAnimationSettings } from '../../context/AnimationSettingsContext';
 
 export default function StringBuilderVisual({ heapId, objDto }) {
   const elements = objDto?.elements || [];
+  const { duration } = useAnimationSettings();
   let textStr = '';
   if (elements.length > 0) {
     const first = elements[0];
@@ -17,8 +20,12 @@ export default function StringBuilderVisual({ heapId, objDto }) {
   const charList = textStr.split('');
 
   return (
-    <div
+    <motion.div
       data-heap-card-id={heapId}
+      initial={{ opacity: 0, scale: 0.9, y: 10 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.85 }}
+      transition={{ duration, ease: 'easeOut' }}
       style={{
         background: '#121826',
         borderRadius: '8px',
@@ -50,8 +57,11 @@ export default function StringBuilderVisual({ heapId, objDto }) {
       ) : (
         <div style={{ display: 'flex', gap: '3px', overflowX: 'auto', paddingBottom: '2px' }}>
           {charList.map((ch, idx) => (
-            <div
+            <motion.div
               key={idx}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration, ease: 'easeOut' }}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -70,10 +80,10 @@ export default function StringBuilderVisual({ heapId, objDto }) {
               }}
             >
               {ch}
-            </div>
+            </motion.div>
           ))}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }

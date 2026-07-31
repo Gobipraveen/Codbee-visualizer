@@ -1,13 +1,20 @@
 import React from 'react';
 import { Link as LinkIcon } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { useAnimationSettings } from '../../context/AnimationSettingsContext';
 
 export function RenderValue({ valDto, sourceId }) {
+  const { duration } = useAnimationSettings();
   if (!valDto) return <span style={{ color: '#64748b' }}>null</span>;
 
   if (valDto.type === 'reference') {
     const targetRef = String(valDto.value);
     return (
-      <span
+      <motion.span
+        key={targetRef}
+        initial={{ scale: 0.95 }}
+        animate={{ scale: 1 }}
+        transition={{ duration, ease: 'easeOut' }}
         data-ref-target={targetRef}
         data-source-id={sourceId}
         style={{
@@ -27,15 +34,21 @@ export function RenderValue({ valDto, sourceId }) {
       >
         <LinkIcon size={10} />
         {targetRef}
-      </span>
+      </motion.span>
     );
   }
 
   if (valDto.type === 'string') {
     return (
-      <span style={{ color: '#fde047', fontFamily: 'monospace', fontSize: '12px' }}>
+      <motion.span
+        key={String(valDto.value)}
+        initial={{ scale: 0.9, opacity: 0.8 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration }}
+        style={{ color: '#fde047', fontFamily: 'monospace', fontSize: '12px' }}
+      >
         &ldquo;{String(valDto.value).length > 24 ? valDto.value.substring(0, 24) + '…' : valDto.value}&rdquo;
-      </span>
+      </motion.span>
     );
   }
 
@@ -46,12 +59,42 @@ export function RenderValue({ valDto, sourceId }) {
   if (valDto.type === 'primitive') {
     const v = valDto.value;
     if (v === true || v === false) {
-      return <span style={{ color: v ? '#4ade80' : '#f87171', fontFamily: 'monospace' }}>{String(v)}</span>;
+      return (
+        <motion.span
+          key={String(v)}
+          initial={{ scale: 1.15 }}
+          animate={{ scale: 1 }}
+          transition={{ duration }}
+          style={{ color: v ? '#4ade80' : '#f87171', fontFamily: 'monospace' }}
+        >
+          {String(v)}
+        </motion.span>
+      );
     }
-    return <span style={{ color: '#38bdf8', fontFamily: 'monospace' }}>{String(v)}</span>;
+    return (
+      <motion.span
+        key={String(v)}
+        initial={{ scale: 1.15 }}
+        animate={{ scale: 1 }}
+        transition={{ duration }}
+        style={{ color: '#38bdf8', fontFamily: 'monospace' }}
+      >
+        {String(v)}
+      </motion.span>
+    );
   }
 
-  return <span style={{ color: '#94a3b8', fontFamily: 'monospace' }}>{String(valDto.value)}</span>;
+  return (
+    <motion.span
+      key={String(valDto.value)}
+      initial={{ scale: 1.1 }}
+      animate={{ scale: 1 }}
+      transition={{ duration }}
+      style={{ color: '#94a3b8', fontFamily: 'monospace' }}
+    >
+      {String(valDto.value)}
+    </motion.span>
+  );
 }
 
 export function cleanClassName(fullName) {
