@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ZoomIn, ZoomOut, RotateCcw, Maximize2 } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import StackHeapPanel from './StackHeapPanel';
+import VisualizationLegend from './VisualizationLegend';
 
 export default function VisualizationCanvas({ stepData }) {
   const [scale, setScale] = useState(1);
@@ -26,7 +27,6 @@ export default function VisualizationCanvas({ stepData }) {
 
   // Mouse wheel zoom
   const handleWheel = (e) => {
-    // Only zoom if wheel is over canvas
     e.preventDefault();
     const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
     setScale((prev) => Math.min(2.5, Math.max(0.4, prev * zoomFactor)));
@@ -34,9 +34,7 @@ export default function VisualizationCanvas({ stepData }) {
 
   // Mouse drag panning
   const handleMouseDown = (e) => {
-    // Only start pan if left click and target is background or canvas area (not clicking interactive pills)
     if (e.button !== 0) return;
-    // Don't drag if clicking buttons or inside variable tables directly unless dragging empty space
     const targetTag = e.target.tagName.toLowerCase();
     if (['button', 'input', 'a', 'select'].includes(targetTag)) return;
 
@@ -85,6 +83,11 @@ export default function VisualizationCanvas({ stepData }) {
         userSelect: 'none',
       }}
     >
+      {/* Collapsible Corner Legend & Key Panel */}
+      <div style={{ position: 'absolute', bottom: '16px', left: '16px', zIndex: 50 }} onMouseDown={(e) => e.stopPropagation()}>
+        <VisualizationLegend />
+      </div>
+
       {/* Floating Canvas Controls (Zoom In, Zoom Out, Reset) */}
       <div
         style={{

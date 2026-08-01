@@ -5,7 +5,7 @@ import { useAnimationSettings } from '../../context/AnimationSettingsContext';
 
 export function RenderValue({ valDto, sourceId }) {
   const { duration } = useAnimationSettings();
-  if (!valDto) return <span style={{ color: '#64748b' }}>null</span>;
+  if (!valDto) return <span style={{ color: '#64748b' }} title="null">null</span>;
 
   if (valDto.type === 'reference') {
     const targetRef = String(valDto.value);
@@ -17,6 +17,7 @@ export function RenderValue({ valDto, sourceId }) {
         transition={{ duration, ease: 'easeOut' }}
         data-ref-target={targetRef}
         data-source-id={sourceId}
+        title={`Reference -> ${targetRef}`}
         style={{
           color: '#c084fc',
           background: 'rgba(192,132,252,0.15)',
@@ -28,7 +29,7 @@ export function RenderValue({ valDto, sourceId }) {
           display: 'inline-flex',
           alignItems: 'center',
           gap: '4px',
-          cursor: 'default',
+          cursor: 'pointer',
           whiteSpace: 'nowrap',
         }}
       >
@@ -39,60 +40,95 @@ export function RenderValue({ valDto, sourceId }) {
   }
 
   if (valDto.type === 'string') {
+    const fullStr = String(valDto.value);
     return (
       <motion.span
-        key={String(valDto.value)}
+        key={fullStr}
         initial={{ scale: 0.9, opacity: 0.8 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration }}
-        style={{ color: '#fde047', fontFamily: 'monospace', fontSize: '12px' }}
+        title={`"${fullStr}" (${fullStr.length} chars)`}
+        style={{
+          color: '#fde047',
+          fontFamily: 'monospace',
+          fontSize: '12px',
+          maxWidth: '150px',
+          display: 'inline-block',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          verticalAlign: 'bottom',
+        }}
       >
-        &ldquo;{String(valDto.value).length > 24 ? valDto.value.substring(0, 24) + '…' : valDto.value}&rdquo;
+        &ldquo;{fullStr.length > 20 ? fullStr.substring(0, 20) + '…' : fullStr}&rdquo;
       </motion.span>
     );
   }
 
   if (valDto.type === 'null') {
-    return <span style={{ color: '#64748b', fontFamily: 'monospace' }}>null</span>;
+    return <span style={{ color: '#64748b', fontFamily: 'monospace' }} title="null">null</span>;
   }
 
   if (valDto.type === 'primitive') {
     const v = valDto.value;
+    const fullStr = String(v);
     if (v === true || v === false) {
       return (
         <motion.span
-          key={String(v)}
+          key={fullStr}
           initial={{ scale: 1.15 }}
           animate={{ scale: 1 }}
           transition={{ duration }}
+          title={`boolean: ${fullStr}`}
           style={{ color: v ? '#4ade80' : '#f87171', fontFamily: 'monospace' }}
         >
-          {String(v)}
+          {fullStr}
         </motion.span>
       );
     }
     return (
       <motion.span
-        key={String(v)}
+        key={fullStr}
         initial={{ scale: 1.15 }}
         animate={{ scale: 1 }}
         transition={{ duration }}
-        style={{ color: '#38bdf8', fontFamily: 'monospace' }}
+        title={fullStr}
+        style={{
+          color: '#38bdf8',
+          fontFamily: 'monospace',
+          maxWidth: '140px',
+          display: 'inline-block',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+          verticalAlign: 'bottom',
+        }}
       >
-        {String(v)}
+        {fullStr}
       </motion.span>
     );
   }
 
+  const fullStr = String(valDto.value);
   return (
     <motion.span
-      key={String(valDto.value)}
+      key={fullStr}
       initial={{ scale: 1.1 }}
       animate={{ scale: 1 }}
       transition={{ duration }}
-      style={{ color: '#94a3b8', fontFamily: 'monospace' }}
+      title={fullStr}
+      style={{
+        color: '#94a3b8',
+        fontFamily: 'monospace',
+        maxWidth: '140px',
+        display: 'inline-block',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
+        verticalAlign: 'bottom',
+      }}
     >
-      {String(valDto.value)}
+      {fullStr}
     </motion.span>
   );
 }

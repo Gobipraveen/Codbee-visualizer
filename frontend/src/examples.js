@@ -1,36 +1,28 @@
 // Example programs for the "Load Example" dropdown
 export const EXAMPLES = [
   {
-    id: 'linked-list',
-    label: 'Linked List',
-    className: 'LinkedListDemo',
-    code: `public class LinkedListDemo {
-    static class Node {
-        int val;
-        Node next;
-
-        Node(int val, Node next) {
-            this.val = val;
-            this.next = next;
-        }
-    }
-
+    id: 'bubble-sort',
+    label: '1. Array Bubble Sort',
+    className: 'BubbleSortDemo',
+    code: `public class BubbleSortDemo {
     public static void main(String[] args) {
-        Node n3 = new Node(30, null);
-        Node n2 = new Node(20, n3);
-        Node head = new Node(10, n2);
-
-        Node curr = head;
-        while (curr != null) {
-            System.out.println("Node val: " + curr.val);
-            curr = curr.next;
+        int[] arr = {5, 3, 8, 1, 2};
+        for (int i = 0; i < arr.length - 1; i++) {
+            for (int j = 0; j < arr.length - i - 1; j++) {
+                if (arr[j] > arr[j + 1]) {
+                    int temp = arr[j];
+                    arr[j] = arr[j + 1];
+                    arr[j + 1] = temp;
+                }
+            }
         }
+        System.out.println("Bubble sort finished");
     }
 }`,
   },
   {
     id: 'binary-tree',
-    label: 'Binary Tree',
+    label: '2. Binary Tree Insertion',
     className: 'BinaryTreeDemo',
     code: `public class BinaryTreeDemo {
     static class TreeNode {
@@ -56,104 +48,114 @@ export const EXAMPLES = [
 }`,
   },
   {
-    id: 'stack-queue',
-    label: 'Stack & Queue',
-    className: 'StackQueueDemo',
+    id: 'valid-parentheses',
+    label: '3. Stack Valid Parentheses',
+    className: 'ValidParenthesesDemo',
     code: `import java.util.Stack;
-import java.util.ArrayDeque;
 
-public class StackQueueDemo {
+public class ValidParenthesesDemo {
     public static void main(String[] args) {
-        Stack<Integer> stack = new Stack<>();
-        stack.push(10);
-        stack.push(20);
-        stack.push(30);
+        String s = "({[]})";
+        Stack<Character> stack = new Stack<>();
 
-        ArrayDeque<String> queue = new ArrayDeque<>();
-        queue.add("first");
-        queue.add("second");
-        queue.add("third");
-
-        System.out.println("Stack top: " + stack.peek());
-        System.out.println("Queue front: " + queue.peek());
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '(' || c == '{' || c == '[') {
+                stack.push(c);
+            } else {
+                if (!stack.isEmpty()) {
+                    stack.pop();
+                }
+            }
+        }
+        System.out.println("Is valid: " + stack.isEmpty());
     }
 }`,
   },
   {
-    id: 'collections',
-    label: 'Map, Set & List',
-    className: 'CollectionDemo',
-    code: `import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+    id: 'level-order',
+    label: '4. Queue Level-Order Traversal',
+    className: 'LevelOrderDemo',
+    code: `import java.util.ArrayDeque;
 
-public class CollectionDemo {
+public class LevelOrderDemo {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+
+        TreeNode(int val) {
+            this.val = val;
+        }
+    }
+
     public static void main(String[] args) {
-        ArrayList<String> list = new ArrayList<>();
-        list.add("Java");
-        list.add("Python");
+        TreeNode root = new TreeNode(1);
+        root.left = new TreeNode(2);
+        root.right = new TreeNode(3);
 
+        ArrayDeque<TreeNode> queue = new ArrayDeque<>();
+        queue.add(root);
+
+        while (!queue.isEmpty()) {
+            TreeNode curr = queue.poll();
+            System.out.println("Visited node: " + curr.val);
+            if (curr.left != null) queue.add(curr.left);
+            if (curr.right != null) queue.add(curr.right);
+        }
+    }
+}`,
+  },
+  {
+    id: 'word-count',
+    label: '5. HashMap Word-Count',
+    className: 'WordCountDemo',
+    code: `import java.util.HashMap;
+
+public class WordCountDemo {
+    public static void main(String[] args) {
+        String[] words = {"apple", "banana", "apple", "cherry", "banana", "apple"};
         HashMap<String, Integer> map = new HashMap<>();
-        map.put("score1", 100);
-        map.put("score2", 200);
 
-        HashSet<Integer> set = new HashSet<>();
-        set.add(42);
-        set.add(99);
-
-        System.out.println("List size: " + list.size());
-        System.out.println("Map size: " + map.size());
-        System.out.println("Set size: " + set.size());
+        for (String word : words) {
+            map.put(word, map.getOrDefault(word, 0) + 1);
+        }
+        System.out.println("Total unique words: " + map.size());
     }
 }`,
   },
   {
     id: 'string-builder',
-    label: 'StringBuilder',
+    label: '6. StringBuilder Sentence',
     className: 'StringBuilderDemo',
     code: `public class StringBuilderDemo {
     public static void main(String[] args) {
-        StringBuilder sb = new StringBuilder("CODE");
-        sb.append("BEE");
+        StringBuilder sb = new StringBuilder("CODBEE");
+        sb.append(" Visualizer");
+        sb.append(" 2026");
         System.out.println("Result: " + sb.toString());
     }
 }`,
   },
   {
-    id: 'for-loop',
-    label: 'For Loop / Sum',
-    className: 'ForLoopDemo',
-    code: `public class ForLoopDemo {
+    id: 'factorial',
+    label: '7. Recursive Factorial',
+    className: 'FactorialDemo',
+    code: `public class FactorialDemo {
     public static void main(String[] args) {
-        int sum = 0;
-        for (int i = 1; i <= 5; i++) {
-            sum += i;
-            System.out.println("i=" + i + "  sum=" + sum);
-        }
-        System.out.println("Final sum: " + sum);
-    }
-}`,
-  },
-  {
-    id: 'recursion',
-    label: 'Recursive Fibonacci',
-    className: 'FibDemo',
-    code: `public class FibDemo {
-    public static void main(String[] args) {
-        for (int n = 0; n <= 5; n++) {
-            System.out.println("fib(" + n + ") = " + fib(n));
-        }
+        int result = factorial(4);
+        System.out.println("4! = " + result);
     }
 
-    public static int fib(int n) {
-        if (n <= 1) return n;
-        return fib(n - 1) + fib(n - 2);
+    public static int factorial(int n) {
+        if (n <= 1) return 1;
+        return n * factorial(n - 1);
     }
 }`,
   },
   {
     id: 'exception',
-    label: 'Uncaught Exception',
+    label: '8. Uncaught Exception',
     className: 'ExceptionDemo',
     code: `public class ExceptionDemo {
     public static void main(String[] args) {
