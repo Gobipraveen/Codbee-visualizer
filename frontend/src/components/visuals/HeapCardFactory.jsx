@@ -1,6 +1,7 @@
 import React from 'react';
 import ArrayVisual from './ArrayVisual';
 import LinkedListVisual from './LinkedListVisual';
+import DoublyLinkedListVisual from './DoublyLinkedListVisual';
 import TreeVisual from './TreeVisual';
 import StackVisual from './StackVisual';
 import QueueVisual from './QueueVisual';
@@ -21,6 +22,8 @@ export default function HeapCardFactory({ heapId, objDto }) {
         return <ArrayVisual heapId={heapId} objDto={objDto} />;
       case 'linked_list':
         return <LinkedListVisual heapId={heapId} objDto={objDto} />;
+      case 'doubly_linked_list':
+        return <DoublyLinkedListVisual heapId={heapId} objDto={objDto} />;
       case 'tree_node':
         return <TreeVisual heapId={heapId} objDto={objDto} />;
       case 'stack':

@@ -19,48 +19,57 @@ export default function MapVisual({ heapId, objDto }) {
         background: '#121826',
         borderRadius: '8px',
         border: '1px solid #f59e0b',
-        boxShadow: '0 4px 12px rgba(245, 158, 11, 0.15)',
-        padding: '10px 12px',
+        boxShadow: '0 4px 10px rgba(245, 158, 11, 0.15)',
+        padding: '8px 10px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '8px',
-        minWidth: '220px',
+        gap: '6px',
+        minWidth: '180px',
+        maxWidth: '260px',
       }}
     >
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1e293b', paddingBottom: '6px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <MapIcon size={14} color="#f59e0b" />
-          <span style={{ fontWeight: 600, color: '#fbbf24', fontSize: '12px', fontFamily: 'monospace' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1e293b', paddingBottom: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <MapIcon size={13} color="#f59e0b" />
+          <span style={{ fontWeight: 600, color: '#fbbf24', fontSize: '11px', fontFamily: 'monospace' }}>
             {cleanClassName(objDto.type)}
           </span>
         </div>
       </div>
 
-      {/* Key -> Value Table */}
+      {/* Unified Key -> Value Pair Rows inside One Bordered Container */}
       {elements.length === 0 ? (
-        <div style={{ fontSize: '11px', color: '#64748b', fontStyle: 'italic' }}>empty map</div>
+        <div style={{ fontSize: '10px', color: '#64748b', fontStyle: 'italic', padding: '4px 0' }}>empty map</div>
       ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid #1e293b', color: '#64748b', fontSize: '10px', textTransform: 'uppercase' }}>
-              <th style={{ padding: '2px 0', textAlign: 'left' }}>Key</th>
-              <th style={{ padding: '2px 0', textAlign: 'right' }}>Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            {elements.map((pair, idx) => (
-              <tr key={idx} style={{ borderBottom: '1px dotted #1e293b' }}>
-                <td style={{ padding: '4px 0', textAlign: 'left' }}>
-                  <RenderValue valDto={pair?.key} sourceId={`${heapId}-map-k-${idx}`} />
-                </td>
-                <td style={{ padding: '4px 0', textAlign: 'right' }}>
-                  <RenderValue valDto={pair?.value} sourceId={`${heapId}-map-v-${idx}`} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', background: '#0f172a', borderRadius: '5px', padding: '4px', border: '1px solid #1e293b' }}>
+          {elements.map((pair, idx) => (
+            <div
+              key={idx}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: '#1e293b',
+                borderRadius: '4px',
+                padding: '3px 6px',
+                fontSize: '11px',
+              }}
+            >
+              {/* Key cell */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <RenderValue valDto={pair?.key} sourceId={`${heapId}-map-k-${idx}`} />
+              </div>
+
+              <span style={{ color: '#f59e0b', fontWeight: 700, fontSize: '10px', margin: '0 4px' }}>→</span>
+
+              {/* Value cell */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <RenderValue valDto={pair?.value} sourceId={`${heapId}-map-v-${idx}`} />
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </motion.div>
   );

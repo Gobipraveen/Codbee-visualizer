@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { HelpCircle, X, Box, Link2, GitFork, Layers, ArrowRightLeft, ListFilter, Map as MapIcon, Type } from 'lucide-react';
+import { HelpCircle, X, Box, Link2, ArrowLeftRight, GitFork, Layers, ArrowRightLeft, ListFilter, Map as MapIcon, Type } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const LEGEND_ITEMS = [
   { type: 'Array', color: '#3b82f6', icon: Box, desc: 'Horizontal filmstrip cells with index numbers [0]' },
-  { type: 'Linked List', color: '#10b981', icon: Link2, desc: 'Node boxes with val | next → reference links' },
-  { type: 'Tree Node', color: '#06b6d4', icon: GitFork, desc: 'Root node branching to ← left and right →' },
-  { type: 'Stack', color: '#f97316', icon: Layers, desc: 'LIFO vertical stack tube with TOP indicator' },
+  { type: 'Singly Linked List', color: '#10b981', icon: Link2, desc: 'Compact 2-cell boxes [ val | next → ]' },
+  { type: 'Doubly Linked List', color: '#8b5cf6', icon: ArrowLeftRight, desc: 'Compact 3-cell boxes [ ← prev | val | next → ]' },
+  { type: 'Tree Node', color: '#06b6d4', icon: GitFork, desc: 'Compact 3-cell boxes [ ← left | val | right → ]' },
+  { type: 'Stack', color: '#f97316', icon: Layers, desc: 'Single vertical container with nested rows & TOP tag' },
   { type: 'Queue', color: '#a855f7', icon: ArrowRightLeft, desc: 'FIFO horizontal tube (FRONT → to ← REAR)' },
-  { type: 'List & Set', color: '#14b8a6', icon: ListFilter, desc: 'Element chips (Set enforces unique values)' },
-  { type: 'Map', color: '#f59e0b', icon: MapIcon, desc: 'Key ➔ Value key-value pairs table' },
+  { type: 'List & Set', color: '#14b8a6', icon: ListFilter, desc: 'Single container with nested element chips' },
+  { type: 'Map', color: '#f59e0b', icon: MapIcon, desc: 'Single container with key → value inline rows' },
   { type: 'StringBuilder', color: '#ec4899', icon: Type, desc: 'Sequence of scrabble character blocks' },
   { type: 'Generic Object', color: '#64748b', icon: Box, desc: 'Fallback table of object fields and values' },
 ];
@@ -31,7 +32,7 @@ export default function VisualizationLegend() {
               position: 'absolute',
               bottom: '40px',
               left: 0,
-              width: '320px',
+              width: '340px',
               background: '#0f172a',
               border: '1px solid #334155',
               borderRadius: '10px',
@@ -57,7 +58,7 @@ export default function VisualizationLegend() {
             </div>
 
             {/* Legend Grid Items */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '260px', overflowY: 'auto', paddingRight: '4px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '280px', overflowY: 'auto', paddingRight: '4px' }}>
               {LEGEND_ITEMS.map((item) => {
                 const IconComponent = item.icon;
                 return (
@@ -74,7 +75,7 @@ export default function VisualizationLegend() {
                         padding: '1px 6px',
                         fontWeight: 600,
                         fontFamily: 'monospace',
-                        minWidth: '85px',
+                        minWidth: '115px',
                         flexShrink: 0,
                       }}
                     >

@@ -21,38 +21,39 @@ export default function LinkedListVisual({ heapId, objDto }) {
         background: '#121826',
         borderRadius: '8px',
         border: '1px solid #10b981',
-        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.15)',
-        padding: '10px 12px',
+        boxShadow: '0 4px 10px rgba(16, 185, 129, 0.15)',
+        padding: '6px 8px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '8px',
-        minWidth: '180px',
+        gap: '4px',
+        minWidth: '120px',
+        maxWidth: '160px',
       }}
     >
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1e293b', paddingBottom: '6px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Link2 size={14} color="#10b981" />
-          <span style={{ fontWeight: 600, color: '#34d399', fontSize: '12px', fontFamily: 'monospace' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1e293b', paddingBottom: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <Link2 size={13} color="#10b981" />
+          <span style={{ fontWeight: 600, color: '#34d399', fontSize: '11px', fontFamily: 'monospace' }}>
             {cleanClassName(objDto.type)}
           </span>
         </div>
       </div>
 
-      {/* Node Content Split (val | next) */}
-      <div style={{ display: 'flex', border: '1px solid #1e293b', borderRadius: '6px', overflow: 'hidden', background: '#0f172a' }}>
-        {/* Value compartment */}
-        <div style={{ flex: 1, padding: '6px 8px', borderRight: '1px solid #1e293b', display: 'flex', flexDirection: 'column' }}>
-          <span style={{ fontSize: '9px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>val</span>
-          <div style={{ marginTop: '2px' }}>
+      {/* Fixed 2-Cell Node Template [ val | next ] */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', border: '1px solid #1e293b', borderRadius: '5px', overflow: 'hidden', background: '#0f172a', alignItems: 'center' }}>
+        {/* Value Sub-Cell (Visually Emphasized Left) */}
+        <div style={{ padding: '4px 6px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minWidth: '40px' }}>
+          <span style={{ fontSize: '8px', color: '#10b981', fontWeight: 700, textTransform: 'uppercase', lineHeight: '1' }}>val</span>
+          <div style={{ marginTop: '1px', fontSize: '13px', fontWeight: 700, color: '#6ee7b7' }}>
             <RenderValue valDto={valDto} sourceId={`${heapId}-val`} />
           </div>
         </div>
 
-        {/* Next link compartment */}
-        <div style={{ padding: '6px 8px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontSize: '9px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase' }}>next</span>
-          <div style={{ marginTop: '2px' }}>
+        {/* Next Sub-Cell (Muted Pointer Cell Right) */}
+        <div style={{ padding: '3px 5px', borderLeft: '1px solid #1e293b', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0b1120' }}>
+          <span style={{ fontSize: '9px', color: '#64748b', fontWeight: 600, textTransform: 'uppercase', lineHeight: '1' }}>next →</span>
+          <div style={{ marginTop: '1px' }}>
             <RenderValue valDto={nextDto} sourceId={`${heapId}-next`} />
           </div>
         </div>

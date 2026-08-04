@@ -31,7 +31,7 @@ function detectException(errorMsg) {
   return null;
 }
 
-// ─── Fallback Type Inference Helper ──────────────────────────────────────────
+// ─── Type Inference Helper ──────────────────────────────────────────────────
 
 function preprocessTrace(trace) {
   if (!trace) return [];
@@ -40,9 +40,13 @@ function preprocessTrace(trace) {
     const newHeap = {};
     for (const [ref, obj] of Object.entries(step.heap)) {
       let visualType = obj.visualType;
-      if (!visualType || visualType === 'object') {
-        const type = obj.type || '';
-        const fields = Object.keys(obj.fields || {});
+      const type = obj.type || '';
+      const fields = Object.keys(obj.fields || {});
+
+      // Priority override for doubly linked list (prev & next fields)
+      if ((fields.includes('prev') || fields.includes('previous')) && fields.includes('next')) {
+        visualType = 'doubly_linked_list';
+      } else if (!visualType || visualType === 'object') {
         if (type.endsWith('[]')) {
           visualType = 'array';
         } else if (fields.includes('left') && fields.includes('right')) {
@@ -376,7 +380,7 @@ function MainApp() {
           </>
         )}
 
-        {/* Center/Right: Zoomable & Pannable Visualization Canvas Area */}
+        {/* Center/Right: Visualization Canvas Area */}
         <section style={{ flex: 1, height: '100%', minWidth: 0, overflow: 'hidden' }}>
           <VisualizationCanvas stepData={currentStepData} />
         </section>

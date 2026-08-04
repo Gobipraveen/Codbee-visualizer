@@ -88,7 +88,11 @@ public class HeapInspector {
         // 1. User-defined custom classes (not in java.* / javax.* / sun.* / jdk.*)
         if (!className.startsWith("java.") && !className.startsWith("javax.") && !className.startsWith("sun.") && !className.startsWith("jdk.")) {
             int selfRefFieldsCount = countSelfReferencingFields(refType);
-            if (selfRefFieldsCount == 1) {
+            boolean hasNext = getFieldByName(refType, "next") != null;
+            boolean hasPrev = getFieldByName(refType, "prev") != null || getFieldByName(refType, "previous") != null;
+            if (hasNext && hasPrev) {
+                heapObj.setVisualType("doubly_linked_list");
+            } else if (selfRefFieldsCount == 1) {
                 heapObj.setVisualType("linked_list");
             } else if (selfRefFieldsCount >= 2) {
                 heapObj.setVisualType("tree_node");

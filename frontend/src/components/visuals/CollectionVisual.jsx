@@ -20,34 +20,30 @@ export default function CollectionVisual({ heapId, objDto }) {
         background: '#121826',
         borderRadius: '8px',
         border: isSet ? '1px dashed #14b8a6' : '1px solid #14b8a6',
-        boxShadow: '0 4px 12px rgba(20, 184, 166, 0.15)',
-        padding: '10px 12px',
+        boxShadow: '0 4px 10px rgba(20, 184, 166, 0.15)',
+        padding: '8px 10px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '8px',
-        minWidth: '200px',
+        gap: '6px',
+        minWidth: '160px',
+        maxWidth: '240px',
       }}
     >
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1e293b', paddingBottom: '6px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          {isSet ? <Hash size={14} color="#14b8a6" /> : <ListFilter size={14} color="#14b8a6" />}
-          <span style={{ fontWeight: 600, color: '#2dd4bf', fontSize: '12px', fontFamily: 'monospace' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1e293b', paddingBottom: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          {isSet ? <Hash size={13} color="#14b8a6" /> : <ListFilter size={13} color="#14b8a6" />}
+          <span style={{ fontWeight: 600, color: '#2dd4bf', fontSize: '11px', fontFamily: 'monospace' }}>
             {cleanClassName(objDto.type)}
           </span>
-          {isSet && (
-            <span style={{ fontSize: '9px', fontWeight: 600, color: '#14b8a6', background: 'rgba(20, 184, 166, 0.15)', padding: '1px 5px', borderRadius: '4px' }}>
-              unique
-            </span>
-          )}
         </div>
       </div>
 
-      {/* Chip / Pill Array */}
+      {/* Unified Single Container with internal chips/rows */}
       {elements.length === 0 ? (
-        <div style={{ fontSize: '11px', color: '#64748b', fontStyle: 'italic' }}>empty {isSet ? 'set' : 'list'}</div>
+        <div style={{ fontSize: '10px', color: '#64748b', fontStyle: 'italic', padding: '4px 0' }}>empty {isSet ? 'set' : 'list'}</div>
       ) : (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', padding: '4px 0' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', background: '#0f172a', borderRadius: '5px', padding: '4px', border: '1px solid #1e293b' }}>
           <AnimatePresence mode="popLayout">
             {elements.map((elemVal, idx) => (
               <motion.div
@@ -57,11 +53,11 @@ export default function CollectionVisual({ heapId, objDto }) {
                 exit={{ opacity: 0, scale: 0.8 }}
                 transition={{ duration, ease: 'easeOut' }}
                 style={{
-                  background: '#0f172a',
-                  border: '1px solid #1e293b',
-                  borderRadius: isSet ? '16px' : '6px',
-                  padding: '3px 8px',
-                  fontSize: '12px',
+                  background: '#1e293b',
+                  border: '1px solid #334155',
+                  borderRadius: isSet ? '12px' : '4px',
+                  padding: '2px 6px',
+                  fontSize: '11px',
                   display: 'inline-flex',
                   alignItems: 'center',
                 }}
