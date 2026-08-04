@@ -1,10 +1,10 @@
 // Example programs for the "Load Example" dropdown
 export const EXAMPLES = [
   {
-    id: 'singly-linked-list',
-    label: '1. Singly Linked List',
-    className: 'LinkedListDemo',
-    code: `public class LinkedListDemo {
+    id: 'shared-linked-list',
+    label: '1. Shared Ref Linked List (6 Nodes)',
+    className: 'SharedLinkedListDemo',
+    code: `public class SharedLinkedListDemo {
     static class Node {
         int val;
         Node next;
@@ -16,16 +16,80 @@ export const EXAMPLES = [
     }
 
     public static void main(String[] args) {
-        Node n3 = new Node(30, null);
+        Node n6 = new Node(60, null);
+        Node n5 = new Node(50, n6);
+        Node n4 = new Node(40, n5);
+        Node n3 = new Node(30, n4);
         Node n2 = new Node(20, n3);
         Node n1 = new Node(10, n2);
-        System.out.println("Head val: " + n1.val);
+
+        Node head = n1;
+        Node p1 = n1;
+
+        System.out.println("Head and p1 both reference n1");
+    }
+}`,
+  },
+  {
+    id: 'binary-tree-7',
+    label: '2. Binary Tree (7 Nodes)',
+    className: 'BinaryTree7Demo',
+    code: `public class BinaryTree7Demo {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+
+        TreeNode(int val) {
+            this.val = val;
+        }
+    }
+
+    public static void main(String[] args) {
+        TreeNode root = new TreeNode(10);
+        root.left = new TreeNode(5);
+        root.right = new TreeNode(15);
+
+        root.left.left = new TreeNode(2);
+        root.left.right = new TreeNode(8);
+
+        root.right.left = new TreeNode(12);
+        root.right.right = new TreeNode(20);
+
+        System.out.println("7-Node binary tree built");
+    }
+}`,
+  },
+  {
+    id: 'mixed-scene',
+    label: '3. Mixed Scene (2 Frames, 3 Heap Objs)',
+    className: 'MixedSceneDemo',
+    code: `public class MixedSceneDemo {
+    static class Data {
+        int id;
+        String label;
+
+        Data(int id, String label) {
+            this.id = id;
+            this.label = label;
+        }
+    }
+
+    public static void main(String[] args) {
+        Data d1 = new Data(1, "Alpha");
+        helper(d1);
+    }
+
+    public static void helper(Data item) {
+        Data d2 = new Data(2, "Beta");
+        Data d3 = new Data(3, "Gamma");
+        System.out.println("Helper frame active");
     }
 }`,
   },
   {
     id: 'doubly-linked-list',
-    label: '2. Doubly Linked List',
+    label: '4. Doubly Linked List',
     className: 'DoublyLinkedListDemo',
     code: `public class DoublyLinkedListDemo {
     static class DoublyNode {
@@ -48,38 +112,13 @@ export const EXAMPLES = [
         n2.next = n3;
         n3.prev = n2;
 
-        System.out.println("n1->n2->n3 linked doubly");
-    }
-}`,
-  },
-  {
-    id: 'binary-tree',
-    label: '3. Binary Tree Insertion',
-    className: 'BinaryTreeDemo',
-    code: `public class BinaryTreeDemo {
-    static class TreeNode {
-        int val;
-        TreeNode left;
-        TreeNode right;
-
-        TreeNode(int val) {
-            this.val = val;
-        }
-    }
-
-    public static void main(String[] args) {
-        TreeNode root = new TreeNode(10);
-        root.left = new TreeNode(5);
-        root.right = new TreeNode(15);
-        root.left.left = new TreeNode(2);
-
-        System.out.println("Root val: " + root.val);
+        System.out.println("Doubly linked list built");
     }
 }`,
   },
   {
     id: 'valid-parentheses',
-    label: '4. Stack Valid Parentheses',
+    label: '5. Stack Valid Parentheses',
     className: 'ValidParenthesesDemo',
     code: `import java.util.Stack;
 
@@ -104,7 +143,7 @@ public class ValidParenthesesDemo {
   },
   {
     id: 'word-count',
-    label: '5. HashMap Word-Count',
+    label: '6. HashMap Word-Count',
     className: 'WordCountDemo',
     code: `import java.util.HashMap;
 
@@ -122,7 +161,7 @@ public class WordCountDemo {
   },
   {
     id: 'hash-set',
-    label: '6. HashSet Unique Tags',
+    label: '7. HashSet Unique Tags',
     className: 'HashSetDemo',
     code: `import java.util.HashSet;
 
@@ -134,55 +173,6 @@ public class HashSetDemo {
         tags.add("java");
         tags.add("datastructure");
         System.out.println("Unique tags count: " + tags.size());
-    }
-}`,
-  },
-  {
-    id: 'bubble-sort',
-    label: '7. Array Bubble Sort',
-    className: 'BubbleSortDemo',
-    code: `public class BubbleSortDemo {
-    public static void main(String[] args) {
-        int[] arr = {5, 3, 8, 1, 2};
-        for (int i = 0; i < arr.length - 1; i++) {
-            for (int j = 0; j < arr.length - i - 1; j++) {
-                if (arr[j] > arr[j + 1]) {
-                    int temp = arr[j];
-                    arr[j] = arr[j + 1];
-                    arr[j + 1] = temp;
-                }
-            }
-        }
-        System.out.println("Bubble sort finished");
-    }
-}`,
-  },
-  {
-    id: 'string-builder',
-    label: '8. StringBuilder Sentence',
-    className: 'StringBuilderDemo',
-    code: `public class StringBuilderDemo {
-    public static void main(String[] args) {
-        StringBuilder sb = new StringBuilder("CODBEE");
-        sb.append(" Visualizer");
-        sb.append(" 2026");
-        System.out.println("Result: " + sb.toString());
-    }
-}`,
-  },
-  {
-    id: 'factorial',
-    label: '9. Recursive Factorial',
-    className: 'FactorialDemo',
-    code: `public class FactorialDemo {
-    public static void main(String[] args) {
-        int result = factorial(4);
-        System.out.println("4! = " + result);
-    }
-
-    public static int factorial(int n) {
-        if (n <= 1) return 1;
-        return n * factorial(n - 1);
     }
 }`,
   },

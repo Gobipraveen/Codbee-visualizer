@@ -79,17 +79,20 @@ export default function StackHeapPanel({ stepData }) {
     }
   });
 
+  // Check if primary heap type is linked list or doubly linked list to format horizontal row
+  const hasLinkedList = containers.some(([_, obj]) => obj.visualType === 'linked_list' || obj.visualType === 'doubly_linked_list');
+
   return (
     <div
       ref={containerRef}
       style={{
         position: 'relative',
         display: 'grid',
-        gridTemplateColumns: '36% 64%',
+        gridTemplateColumns: '34% 66%',
         gap: '14px',
         height: '100%',
         width: '100%',
-        overflowY: 'auto',
+        overflow: 'auto',
       }}
     >
       {/* SVG Arrow Overlay */}
@@ -118,7 +121,7 @@ export default function StackHeapPanel({ stepData }) {
                 const isTop = idx === 0;
                 const depth = totalFrames - 1 - idx;
                 const theme = getDepthTheme(depth);
-                const indentPx = Math.min(depth * 14, 84);
+                const indentPx = Math.min(depth * 12, 60);
 
                 return (
                   <motion.div
@@ -138,12 +141,12 @@ export default function StackHeapPanel({ stepData }) {
                       position: 'relative',
                     }}
                   >
-                    {/* Cascading Tree Connector Guide for Nested Frames */}
+                    {/* Cascading Connector for Nested Frames */}
                     {depth > 0 && (
                       <span
                         style={{
                           position: 'absolute',
-                          left: '-12px',
+                          left: '-10px',
                           top: '12px',
                           color: theme.border,
                           fontSize: '11px',
@@ -159,7 +162,6 @@ export default function StackHeapPanel({ stepData }) {
                     {/* Header Bar */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid #1e293b', paddingBottom: '6px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
-                        {/* Depth Badge */}
                         <span
                           style={{
                             fontSize: '9px',
@@ -175,7 +177,6 @@ export default function StackHeapPanel({ stepData }) {
                           #{depth}
                         </span>
 
-                        {/* Method Call Name & Parameters */}
                         <span
                           style={{
                             fontWeight: 600,
@@ -192,7 +193,6 @@ export default function StackHeapPanel({ stepData }) {
                         </span>
                       </div>
 
-                      {/* Active Tag & Line Number */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
                         {isTop && (
                           <span style={{ fontSize: '9px', fontWeight: 700, color: '#38bdf8', background: 'rgba(56, 189, 248, 0.2)', padding: '1px 5px', borderRadius: '4px' }}>
@@ -228,7 +228,7 @@ export default function StackHeapPanel({ stepData }) {
         </div>
       </div>
 
-      {/* ── Heap Panel (Structured 2-Column Layout: Main Containers Left, Primitive Values Right) ── */}
+      {/* ── Heap Panel (Efficient Compact Grid & Flow Layout) ── */}
       <div style={panelCardStyle}>
         <div style={panelHeaderStyle}>
           <Database size={15} color="#10b981" />
@@ -240,47 +240,39 @@ export default function StackHeapPanel({ stepData }) {
         ) : (
           <div
             style={{
-              display: 'grid',
-              gridTemplateColumns: primitives.length > 0 ? '58% 42%' : 'repeat(auto-fill, minmax(220px, 280px))',
-              gap: '14px',
-              alignContent: 'start',
+              display: 'flex',
+              flexDirection: hasLinkedList ? 'row' : 'row',
+              flexWrap: 'wrap',
+              gap: '16px 20px',
+              alignItems: 'flex-start',
+              alignContent: 'flex-start',
             }}
           >
-            {/* Column 1: Main Containers & Data Structures */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <AnimatePresence mode="popLayout">
-                {containers.map(([heapId, objDto]) => (
-                  <motion.div
-                    key={heapId}
-                    initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.85 }}
-                    transition={{ duration, ease: 'easeOut' }}
-                  >
-                    <HeapCardFactory heapId={heapId} objDto={objDto} />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
+            <AnimatePresence mode="popLayout">
+              {containers.map(([heapId, objDto]) => (
+                <motion.div
+                  key={heapId}
+                  initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.85 }}
+                  transition={{ duration, ease: 'easeOut' }}
+                >
+                  <HeapCardFactory heapId={heapId} objDto={objDto} />
+                </motion.div>
+              ))}
 
-            {/* Column 2: Primitive Wrappers & Strings */}
-            {primitives.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', alignItems: 'flex-start' }}>
-                <AnimatePresence mode="popLayout">
-                  {primitives.map(([heapId, objDto]) => (
-                    <motion.div
-                      key={heapId}
-                      initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.85 }}
-                      transition={{ duration, ease: 'easeOut' }}
-                    >
-                      <HeapCardFactory heapId={heapId} objDto={objDto} />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            )}
+              {primitives.map(([heapId, objDto]) => (
+                <motion.div
+                  key={heapId}
+                  initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.85 }}
+                  transition={{ duration, ease: 'easeOut' }}
+                >
+                  <HeapCardFactory heapId={heapId} objDto={objDto} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         )}
       </div>
