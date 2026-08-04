@@ -25,19 +25,39 @@ export const SAMPLE_LINKED_LIST_CODE = `public class LinkedListDemo {
     }
 }`;
 
-export default function CodeEditor({ code, onChange, currentLine }) {
+export default function CodeEditor({ code, onChange, currentLine, prevLine }) {
   const editorRef = useRef(null);
   const decorationsRef = useRef([]);
 
-  const handleEditorDidMount = (editor, monaco) => {
+  const handleEditorDidMount = (editor) => {
     editorRef.current = editor;
   };
 
   useEffect(() => {
-    if (editorRef.current && currentLine && currentLine > 0) {
+    if (editorRef.current) {
       const editor = editorRef.current;
-      decorationsRef.current = editor.deltaDecorations(decorationsRef.current, [
-        {
+      const newDecorations = [];
+
+      // 1. Previous Executed Line Marker (shown when currentStep > 0 and prevLine is valid)
+      if (prevLine && prevLine > 0 && prevLine !== currentLine) {
+        newDecorations.push({
+          range: {
+            startLineNumber: prevLine,
+            startColumn: 1,
+            endLineNumber: prevLine,
+            endColumn: 1,
+          },
+          options: {
+            isWholeLine: true,
+            className: 'monaco-line-highlight-prev',
+            glyphMarginClassName: 'monaco-glyph-prev-line',
+          },
+        });
+      }
+
+      // 2. Current Execution Line Marker
+      if (currentLine && currentLine > 0) {
+        newDecorations.push({
           range: {
             startLineNumber: currentLine,
             startColumn: 1,
@@ -46,17 +66,17 @@ export default function CodeEditor({ code, onChange, currentLine }) {
           },
           options: {
             isWholeLine: true,
-            className: 'active-line-highlight',
-            glyphMarginClassName: 'active-line-glyph',
+            className: 'monaco-line-highlight-current',
+            glyphMarginClassName: 'monaco-glyph-current-line',
           },
-        },
-      ]);
+        });
 
-      editor.revealLineInCenterIfOutsideViewport(currentLine);
-    } else if (editorRef.current && (!currentLine || currentLine <= 0)) {
-      decorationsRef.current = editorRef.current.deltaDecorations(decorationsRef.current, []);
+        editor.revealLineInCenterIfOutsideViewport(currentLine);
+      }
+
+      decorationsRef.current = editor.deltaDecorations(decorationsRef.current, newDecorations);
     }
-  }, [currentLine]);
+  }, [currentLine, prevLine]);
 
   return (
     <div style={{ height: '100%', width: '100%', borderRadius: '8px', overflow: 'hidden' }}>
@@ -74,6 +94,7 @@ export default function CodeEditor({ code, onChange, currentLine }) {
           scrollBeyondLastLine: false,
           automaticLayout: true,
           glyphMargin: true,
+          wordWrap: 'on',
           lineNumbersMinChars: 3,
         }}
       />

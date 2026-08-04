@@ -214,6 +214,8 @@ function MainApp() {
 
   const currentStepData = trace[currentStep] || null;
   const currentLine = currentStepData?.line || 0;
+  const prevStepData = currentStep > 0 ? trace[currentStep - 1] : null;
+  const prevLine = prevStepData?.line || 0;
 
   // ── Render Layout ──────────────────────────────────────────────────────────
 
@@ -360,7 +362,7 @@ function MainApp() {
                 overflow: 'hidden',
               }}
             >
-              <CodeEditor code={code} onChange={setCode} currentLine={currentLine} />
+              <CodeEditor code={code} onChange={setCode} currentLine={currentLine} prevLine={prevLine} />
             </section>
 
             {/* Splitter Resize Bar */}
