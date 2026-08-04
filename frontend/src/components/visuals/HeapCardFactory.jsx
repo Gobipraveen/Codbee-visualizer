@@ -13,7 +13,7 @@ import GenericObjectVisual from './GenericObjectVisual';
 
 export default function HeapCardFactory({ heapId, objDto }) {
   const visualType = objDto?.visualType || 'object';
-  const tooltipText = `Memory ID: ${heapId}\nClass: ${objDto?.type || 'Object'}\nVisual Type: ${visualType}`;
+  const tooltipText = `Class: ${objDto?.type || 'Object'}\nVisual Type: ${visualType}`;
 
   const renderVisualComponent = () => {
     switch (visualType) {

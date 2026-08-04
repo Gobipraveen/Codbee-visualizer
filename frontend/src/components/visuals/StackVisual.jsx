@@ -35,12 +35,9 @@ export default function StackVisual({ heapId, objDto }) {
             {cleanClassName(objDto.type)}
           </span>
         </div>
-        <span style={{ fontSize: '10px', color: '#94a3b8', background: '#0f172a', padding: '1px 6px', borderRadius: '4px' }}>
-          {heapId}
-        </span>
       </div>
 
-      {/* Stack Items (Stacked Bottom-to-Top: reverse elements so TOP is at top of UI) */}
+      {/* Stack Items */}
       {elements.length === 0 ? (
         <div style={{ fontSize: '11px', color: '#64748b', fontStyle: 'italic', padding: '6px 0' }}>empty stack</div>
       ) : (

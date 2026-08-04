@@ -35,12 +35,9 @@ export default function QueueVisual({ heapId, objDto }) {
             {cleanClassName(objDto.type)}
           </span>
         </div>
-        <span style={{ fontSize: '10px', color: '#94a3b8', background: '#0f172a', padding: '1px 6px', borderRadius: '4px' }}>
-          {heapId}
-        </span>
       </div>
 
-      {/* Queue Tube (Front on left, Rear on right) */}
+      {/* Queue Tube */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: '#0f172a', borderTop: '2px solid #a855f7', borderBottom: '2px solid #a855f7', padding: '6px 8px', borderRadius: '6px' }}>
         <span style={{ fontSize: '9px', fontWeight: 700, color: '#c084fc', marginRight: '4px' }}>FRONT →</span>
 

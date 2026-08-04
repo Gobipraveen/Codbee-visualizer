@@ -9,7 +9,6 @@ export default function ArrayVisual({ heapId, objDto }) {
   const elements = objDto?.elements || [];
   const { duration } = useAnimationSettings();
 
-  // Determine items to render: use elements array if populated, else fields with "[0]", "[1]"
   const items = elements.length > 0
     ? elements.map((elem, idx) => ({ index: idx, valDto: elem }))
     : Object.entries(fields)
@@ -47,9 +46,6 @@ export default function ArrayVisual({ heapId, objDto }) {
             {cleanClassName(objDto.type)}
           </span>
         </div>
-        <span style={{ fontSize: '10px', color: '#94a3b8', background: '#0f172a', padding: '1px 6px', borderRadius: '4px' }}>
-          {heapId}
-        </span>
       </div>
 
       {/* Filmstrip Row of Cells */}
@@ -76,11 +72,9 @@ export default function ArrayVisual({ heapId, objDto }) {
                   padding: '4px 6px',
                 }}
               >
-                {/* Index on top */}
                 <span style={{ fontSize: '9px', fontWeight: 600, color: '#64748b', marginBottom: '2px', fontFamily: 'monospace' }}>
                   [{index}]
                 </span>
-                {/* Value inside */}
                 <div style={{ fontSize: '12px' }}>
                   <RenderValue valDto={valDto} sourceId={`${heapId}-idx-${index}`} />
                 </div>

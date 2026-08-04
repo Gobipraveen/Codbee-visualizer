@@ -5,7 +5,7 @@ import { useAnimationSettings } from '../../context/AnimationSettingsContext';
 
 export function RenderValue({ valDto, sourceId }) {
   const { duration } = useAnimationSettings();
-  if (!valDto) return <span style={{ color: '#64748b' }} title="null">null</span>;
+  if (!valDto) return <span style={{ color: '#64748b' }}>null</span>;
 
   if (valDto.type === 'reference') {
     const targetRef = String(valDto.value);
@@ -17,24 +17,23 @@ export function RenderValue({ valDto, sourceId }) {
         transition={{ duration, ease: 'easeOut' }}
         data-ref-target={targetRef}
         data-source-id={sourceId}
-        title={`Reference -> ${targetRef}`}
+        title="Reference link"
         style={{
           color: '#c084fc',
-          background: 'rgba(192,132,252,0.15)',
-          border: '1px solid rgba(192,132,252,0.4)',
+          background: 'rgba(192,132,252,0.18)',
+          border: '1px solid rgba(192,132,252,0.5)',
           borderRadius: '12px',
-          padding: '2px 8px',
+          padding: '2px 6px',
           fontSize: '11px',
           fontFamily: 'monospace',
           display: 'inline-flex',
           alignItems: 'center',
-          gap: '4px',
+          gap: '3px',
           cursor: 'pointer',
           whiteSpace: 'nowrap',
         }}
       >
-        <LinkIcon size={10} />
-        {targetRef}
+        <LinkIcon size={11} />
       </motion.span>
     );
   }
@@ -47,7 +46,7 @@ export function RenderValue({ valDto, sourceId }) {
         initial={{ scale: 0.9, opacity: 0.8 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration }}
-        title={`"${fullStr}" (${fullStr.length} chars)`}
+        title={`"${fullStr}"`}
         style={{
           color: '#fde047',
           fontFamily: 'monospace',
@@ -66,7 +65,7 @@ export function RenderValue({ valDto, sourceId }) {
   }
 
   if (valDto.type === 'null') {
-    return <span style={{ color: '#64748b', fontFamily: 'monospace' }} title="null">null</span>;
+    return <span style={{ color: '#64748b', fontFamily: 'monospace' }}>null</span>;
   }
 
   if (valDto.type === 'primitive') {
@@ -79,7 +78,6 @@ export function RenderValue({ valDto, sourceId }) {
           initial={{ scale: 1.15 }}
           animate={{ scale: 1 }}
           transition={{ duration }}
-          title={`boolean: ${fullStr}`}
           style={{ color: v ? '#4ade80' : '#f87171', fontFamily: 'monospace' }}
         >
           {fullStr}
@@ -92,7 +90,6 @@ export function RenderValue({ valDto, sourceId }) {
         initial={{ scale: 1.15 }}
         animate={{ scale: 1 }}
         transition={{ duration }}
-        title={fullStr}
         style={{
           color: '#38bdf8',
           fontFamily: 'monospace',
@@ -116,7 +113,6 @@ export function RenderValue({ valDto, sourceId }) {
       initial={{ scale: 1.1 }}
       animate={{ scale: 1 }}
       transition={{ duration }}
-      title={fullStr}
       style={{
         color: '#94a3b8',
         fontFamily: 'monospace',

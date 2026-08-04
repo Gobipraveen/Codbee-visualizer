@@ -35,9 +35,6 @@ export default function GenericObjectVisual({ heapId, objDto }) {
             {cleanClassName(objDto.type)}
           </span>
         </div>
-        <span style={{ fontSize: '10px', color: '#94a3b8', background: '#0f172a', padding: '1px 6px', borderRadius: '4px' }}>
-          {heapId}
-        </span>
       </div>
 
       {/* Fields Table */}

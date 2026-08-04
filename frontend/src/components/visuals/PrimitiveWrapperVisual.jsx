@@ -29,7 +29,6 @@ export default function PrimitiveWrapperVisual({ heapId, objDto }) {
         {cleanClassName(objDto.type)}:
       </span>
       <RenderValue valDto={valDto} sourceId={`${heapId}-val`} />
-      <span style={{ fontSize: '9px', color: '#64748b', marginLeft: '4px' }}>({heapId})</span>
     </motion.div>
   );
 }
