@@ -10,7 +10,7 @@ export default function VisualizationCanvas({ stepData }) {
         width: '100%',
         height: '100%',
         overflow: 'auto',
-        background: '#090d16',
+        background: 'var(--bg-canvas)',
       }}
     >
       {/* Collapsible Corner Legend & Key Panel */}

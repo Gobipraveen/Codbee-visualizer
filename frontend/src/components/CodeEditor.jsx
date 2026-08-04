@@ -25,7 +25,7 @@ export const SAMPLE_LINKED_LIST_CODE = `public class LinkedListDemo {
     }
 }`;
 
-export default function CodeEditor({ code, onChange, currentLine, prevLine }) {
+export default function CodeEditor({ code, onChange, currentLine, prevLine, theme }) {
   const editorRef = useRef(null);
   const decorationsRef = useRef([]);
 
@@ -83,7 +83,7 @@ export default function CodeEditor({ code, onChange, currentLine, prevLine }) {
       <Editor
         height="100%"
         defaultLanguage="java"
-        theme="vs-dark"
+        theme={theme === 'dark' ? 'vs-dark' : 'vs'}
         value={code}
         onChange={onChange}
         onMount={handleEditorDidMount}

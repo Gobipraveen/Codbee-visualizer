@@ -5,7 +5,7 @@ import VisualizationCanvas from './components/VisualizationCanvas';
 import StdoutDrawer from './components/StdoutDrawer';
 import SettingsModal from './components/SettingsModal';
 import { AnimationSettingsProvider } from './context/AnimationSettingsContext';
-import { Play, AlertCircle, Loader2, Code2, Share2, CheckCheck, ChevronDown, PanelLeftClose, PanelLeftOpen, Settings } from 'lucide-react';
+import { Play, AlertCircle, Loader2, Code2, Share2, CheckCheck, ChevronDown, PanelLeftClose, PanelLeftOpen, Settings, Sun, Moon } from 'lucide-react';
 import { EXAMPLES } from './examples';
 import { buildShareableUrl, readCodeFromUrlParam } from './shareLink';
 
@@ -88,6 +88,18 @@ function MainApp() {
   const [exampleOpen, setExampleOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const exampleRef = useRef(null);
+
+  // Theme State (Dark / Light Mode with LocalStorage Persistence)
+  const [theme, setTheme] = useState(() => localStorage.getItem('codbee_theme') || 'dark');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('codbee_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
   // Left Panel Resizing & Collapsing State
   const [isEditorCollapsed, setIsEditorCollapsed] = useState(false);
@@ -292,6 +304,16 @@ function MainApp() {
             )}
           </button>
 
+          {/* Theme Mode Toggle Button */}
+          <button
+            className="btn btn-ghost"
+            onClick={toggleTheme}
+            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+            style={{ padding: '6px 10px' }}
+          >
+            {theme === 'dark' ? <Sun size={15} color="#f59e0b" /> : <Moon size={15} color="#2563eb" />}
+          </button>
+
           {/* Settings Gear Button */}
           <div style={{ position: 'relative' }}>
             <button
@@ -358,11 +380,11 @@ function MainApp() {
                 flexShrink: 0,
                 display: 'flex',
                 flexDirection: 'column',
-                background: '#121826',
+                background: 'var(--bg-card)',
                 overflow: 'hidden',
               }}
             >
-              <CodeEditor code={code} onChange={setCode} currentLine={currentLine} prevLine={prevLine} />
+              <CodeEditor code={code} onChange={setCode} currentLine={currentLine} prevLine={prevLine} theme={theme} />
             </section>
 
             {/* Splitter Resize Bar */}

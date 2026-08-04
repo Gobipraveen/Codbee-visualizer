@@ -5,7 +5,7 @@ import { useAnimationSettings } from '../../context/AnimationSettingsContext';
 
 export function RenderValue({ valDto, sourceId }) {
   const { duration } = useAnimationSettings();
-  if (!valDto) return <span style={{ color: '#64748b' }}>null</span>;
+  if (!valDto) return <span style={{ color: 'var(--text-subtle)' }}>null</span>;
 
   if (valDto.type === 'reference') {
     const targetRef = String(valDto.value);
@@ -19,9 +19,9 @@ export function RenderValue({ valDto, sourceId }) {
         data-source-id={sourceId}
         title="Reference link"
         style={{
-          color: '#c084fc',
-          background: 'rgba(192,132,252,0.18)',
-          border: '1px solid rgba(192,132,252,0.5)',
+          color: 'var(--arrow-stroke)',
+          background: 'rgba(147, 51, 234, 0.12)',
+          border: '1px solid var(--arrow-stroke)',
           borderRadius: '12px',
           padding: '2px 6px',
           fontSize: '11px',
@@ -48,7 +48,7 @@ export function RenderValue({ valDto, sourceId }) {
         transition={{ duration }}
         title={`"${fullStr}"`}
         style={{
-          color: '#fde047',
+          color: 'var(--type-map)',
           fontFamily: 'monospace',
           fontSize: '12px',
           maxWidth: '150px',
@@ -65,7 +65,7 @@ export function RenderValue({ valDto, sourceId }) {
   }
 
   if (valDto.type === 'null') {
-    return <span style={{ color: '#64748b', fontFamily: 'monospace' }}>null</span>;
+    return <span style={{ color: 'var(--text-subtle)', fontFamily: 'monospace' }}>null</span>;
   }
 
   if (valDto.type === 'primitive') {
@@ -78,7 +78,7 @@ export function RenderValue({ valDto, sourceId }) {
           initial={{ scale: 1.15 }}
           animate={{ scale: 1 }}
           transition={{ duration }}
-          style={{ color: v ? '#4ade80' : '#f87171', fontFamily: 'monospace' }}
+          style={{ color: v ? 'var(--success)' : 'var(--danger)', fontFamily: 'monospace' }}
         >
           {fullStr}
         </motion.span>
@@ -91,7 +91,7 @@ export function RenderValue({ valDto, sourceId }) {
         animate={{ scale: 1 }}
         transition={{ duration }}
         style={{
-          color: '#38bdf8',
+          color: 'var(--primary)',
           fontFamily: 'monospace',
           maxWidth: '140px',
           display: 'inline-block',
@@ -114,7 +114,7 @@ export function RenderValue({ valDto, sourceId }) {
       animate={{ scale: 1 }}
       transition={{ duration }}
       style={{
-        color: '#94a3b8',
+        color: 'var(--text-muted)',
         fontFamily: 'monospace',
         maxWidth: '140px',
         display: 'inline-block',

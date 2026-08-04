@@ -9,12 +9,12 @@ import { useAnimationSettings } from '../context/AnimationSettingsContext';
 // ─── Color Palette per Depth ──────────────────────────────────────────────────
 
 const DEPTH_THEMES = [
-  { border: '#3b82f6', headerBg: 'rgba(59, 130, 246, 0.15)', text: '#93c5fd', badgeBg: 'rgba(59, 130, 246, 0.25)', badgeText: '#60a5fa' }, // Depth 0 (Blue)
-  { border: '#06b6d4', headerBg: 'rgba(6, 182, 212, 0.15)', text: '#67e8f9', badgeBg: 'rgba(6, 182, 212, 0.25)', badgeText: '#22d3ee' },  // Depth 1 (Cyan)
-  { border: '#10b981', headerBg: 'rgba(16, 185, 129, 0.15)', text: '#6ee7b7', badgeBg: 'rgba(16, 185, 129, 0.25)', badgeText: '#34d399' }, // Depth 2 (Green)
-  { border: '#f59e0b', headerBg: 'rgba(245, 158, 11, 0.15)', text: '#fde047', badgeBg: 'rgba(245, 158, 11, 0.25)', badgeText: '#fbbf24' }, // Depth 3 (Amber)
-  { border: '#a855f7', headerBg: 'rgba(168, 85, 247, 0.15)', text: '#c084fc', badgeBg: 'rgba(168, 85, 247, 0.25)', badgeText: '#c084fc' }, // Depth 4 (Purple)
-  { border: '#ec4899', headerBg: 'rgba(236, 72, 153, 0.15)', text: '#f472b6', badgeBg: 'rgba(236, 72, 153, 0.25)', badgeText: '#f472b6' }, // Depth 5+ (Pink)
+  { border: '#3b82f6', headerBg: 'rgba(59, 130, 246, 0.15)', text: '#60a5fa', badgeBg: 'rgba(59, 130, 246, 0.25)', badgeText: '#2563eb' }, // Depth 0 (Blue)
+  { border: '#06b6d4', headerBg: 'rgba(6, 182, 212, 0.15)', text: '#22d3ee', badgeBg: 'rgba(6, 182, 212, 0.25)', badgeText: '#0891b2' },  // Depth 1 (Cyan)
+  { border: '#10b981', headerBg: 'rgba(16, 185, 129, 0.15)', text: '#34d399', badgeBg: 'rgba(16, 185, 129, 0.25)', badgeText: '#059669' }, // Depth 2 (Green)
+  { border: '#f59e0b', headerBg: 'rgba(245, 158, 11, 0.15)', text: '#fbbf24', badgeBg: 'rgba(245, 158, 11, 0.25)', badgeText: '#d97706' }, // Depth 3 (Amber)
+  { border: '#a855f7', headerBg: 'rgba(168, 85, 247, 0.15)', text: '#c084fc', badgeBg: 'rgba(168, 85, 247, 0.25)', badgeText: '#9333ea' }, // Depth 4 (Purple)
+  { border: '#ec4899', headerBg: 'rgba(236, 72, 153, 0.15)', text: '#f472b6', badgeBg: 'rgba(236, 72, 153, 0.25)', badgeText: '#db2777' }, // Depth 5+ (Pink)
 ];
 
 function getDepthTheme(depth) {
@@ -102,11 +102,11 @@ export default function StackHeapPanel({ stepData }) {
       <div style={panelCardStyle}>
         <div style={panelHeaderStyle}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Layers size={15} color="#3b82f6" />
+            <Layers size={15} color="var(--primary)" />
             <span>Call Stack</span>
           </div>
           {totalFrames > 0 && (
-            <span style={{ fontSize: '10px', color: '#93c5fd', background: 'rgba(59, 130, 246, 0.15)', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
+            <span style={{ fontSize: '10px', color: 'var(--primary)', background: 'rgba(59, 130, 246, 0.15)', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
               Depth: {totalFrames}
             </span>
           )}
@@ -133,10 +133,10 @@ export default function StackHeapPanel({ stepData }) {
                     ref={isTop ? activeFrameRef : null}
                     style={{
                       marginLeft: `${indentPx}px`,
-                      background: '#121826',
+                      background: 'var(--bg-card)',
                       borderRadius: '8px',
                       border: isTop ? `2px solid ${theme.border}` : `1px solid ${theme.border}`,
-                      boxShadow: isTop ? `0 0 12px ${theme.border}33` : '0 2px 6px rgba(0,0,0,0.2)',
+                      boxShadow: isTop ? `0 0 12px ${theme.border}33` : '0 2px 6px rgba(0,0,0,0.1)',
                       padding: '8px 10px',
                       position: 'relative',
                     }}
@@ -160,7 +160,7 @@ export default function StackHeapPanel({ stepData }) {
                     )}
 
                     {/* Header Bar */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid #1e293b', paddingBottom: '6px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid var(--bg-card-border)', paddingBottom: '6px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
                         <span
                           style={{
@@ -180,7 +180,7 @@ export default function StackHeapPanel({ stepData }) {
                         <span
                           style={{
                             fontWeight: 600,
-                            color: theme.text,
+                            color: 'var(--text-main)',
                             fontSize: '12px',
                             fontFamily: 'monospace',
                             whiteSpace: 'nowrap',
@@ -195,11 +195,11 @@ export default function StackHeapPanel({ stepData }) {
 
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
                         {isTop && (
-                          <span style={{ fontSize: '9px', fontWeight: 700, color: '#38bdf8', background: 'rgba(56, 189, 248, 0.2)', padding: '1px 5px', borderRadius: '4px' }}>
+                          <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--primary)', background: 'rgba(56, 189, 248, 0.2)', padding: '1px 5px', borderRadius: '4px' }}>
                             TOP
                           </span>
                         )}
-                        <span style={{ fontSize: '11px', color: '#94a3b8', background: '#0f172a', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--text-muted)', background: 'var(--bg-cell)', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace' }}>
                           line {frame.line}
                         </span>
                       </div>
@@ -209,8 +209,8 @@ export default function StackHeapPanel({ stepData }) {
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                       <tbody>
                         {Object.entries(frame.variables || {}).map(([varName, valDto]) => (
-                          <tr key={varName} style={{ borderBottom: '1px dotted #1e293b' }}>
-                            <td style={{ padding: '3px 0', color: '#cbd5e1', fontFamily: 'monospace', fontWeight: 500 }}>
+                          <tr key={varName} style={{ borderBottom: '1px dotted var(--bg-card-border)' }}>
+                            <td style={{ padding: '3px 0', color: 'var(--text-main)', fontFamily: 'monospace', fontWeight: 500 }}>
                               {varName}
                             </td>
                             <td style={{ padding: '3px 0', textAlign: 'right' }}>
@@ -231,7 +231,7 @@ export default function StackHeapPanel({ stepData }) {
       {/* ── Heap Panel (Efficient Compact Grid & Flow Layout) ── */}
       <div style={panelCardStyle}>
         <div style={panelHeaderStyle}>
-          <Database size={15} color="#10b981" />
+          <Database size={15} color="var(--success)" />
           <span>Heap Objects</span>
         </div>
 
@@ -283,9 +283,9 @@ export default function StackHeapPanel({ stepData }) {
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const panelCardStyle = {
-  background: '#121826',
+  background: 'var(--bg-card)',
   borderRadius: '8px',
-  border: '1px solid #1e293b',
+  border: '1px solid var(--bg-card-border)',
   padding: '12px',
   overflowY: 'auto',
   display: 'flex',
@@ -298,7 +298,7 @@ const panelHeaderStyle = {
   justifyContent: 'space-between',
   fontWeight: 600,
   fontSize: '11px',
-  color: '#f8fafc',
+  color: 'var(--text-main)',
   marginBottom: '12px',
   textTransform: 'uppercase',
   letterSpacing: '0.5px',
@@ -307,7 +307,7 @@ const panelHeaderStyle = {
 
 const emptyTextStyle = {
   fontSize: '12px',
-  color: '#64748b',
+  color: 'var(--text-subtle)',
   fontStyle: 'italic',
   textAlign: 'center',
   padding: '12px 0',

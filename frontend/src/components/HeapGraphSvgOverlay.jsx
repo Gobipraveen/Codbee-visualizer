@@ -140,10 +140,10 @@ export default function HeapGraphSvgOverlay({ containerRef, stepData }) {
           refY="3"
           orient="auto"
         >
-          <polygon points="0 0, 8 3, 0 6" fill="#c084fc" />
+          <polygon points="0 0, 8 3, 0 6" fill="var(--arrow-stroke)" />
         </marker>
         <filter id="arrow-glow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodColor="#c084fc" floodOpacity="0.3" />
+          <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodColor="var(--arrow-stroke)" floodOpacity="0.3" />
         </filter>
       </defs>
       <AnimatePresence>
@@ -155,7 +155,7 @@ export default function HeapGraphSvgOverlay({ containerRef, stepData }) {
             exit={{ opacity: 0 }}
             transition={{ duration, ease: 'easeInOut' }}
             fill="none"
-            stroke="#c084fc"
+            stroke="var(--arrow-stroke)"
             strokeWidth="1.75"
             strokeDasharray="5 3"
             strokeLinejoin="round"
