@@ -5,7 +5,7 @@ import VisualizationCanvas from './components/VisualizationCanvas';
 import StdoutDrawer from './components/StdoutDrawer';
 import SettingsModal from './components/SettingsModal';
 import { AnimationSettingsProvider } from './context/AnimationSettingsContext';
-import { Play, AlertCircle, Loader2, Code2, Share2, CheckCheck, ChevronDown, PanelLeftClose, PanelLeftOpen, Settings, Sun, Moon } from 'lucide-react';
+import { Play, AlertCircle, Loader2, Code2, Share2, CheckCheck, ChevronDown, PanelLeftClose, PanelLeftOpen, Settings, Sun, Moon, Trash2 } from 'lucide-react';
 import { EXAMPLES } from './examples';
 import { buildShareableUrl, readCodeFromUrlParam } from './shareLink';
 
@@ -91,6 +91,7 @@ function MainApp() {
 
   // Theme State (Dark / Light Mode with LocalStorage Persistence)
   const [theme, setTheme] = useState(() => localStorage.getItem('codbee_theme') || 'dark');
+  const [toastMessage, setToastMessage] = useState(null);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -99,6 +100,17 @@ function MainApp() {
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
+  // Clear Code & Trace State Handler
+  const handleClearCode = () => {
+    setCode('');
+    setTrace([]);
+    setCurrentStep(0);
+    setError(null);
+    setException(null);
+    setToastMessage('Cleared ✓');
+    setTimeout(() => setToastMessage(null), 2000);
   };
 
   // Left Panel Resizing & Collapsing State
@@ -326,18 +338,6 @@ function MainApp() {
             </button>
             <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
           </div>
-
-          {/* Visualize Execution button */}
-          <button
-            className="btn btn-primary"
-            onClick={handleVisualize}
-            disabled={loading}
-            title="Compile and visualize execution"
-          >
-            {loading
-              ? <><Loader2 size={14} className="spin-icon" /> Tracing...</>
-              : <><Play size={14} fill="white" /> Visualize</>}
-          </button>
         </div>
       </header>
 
@@ -384,6 +384,60 @@ function MainApp() {
                 overflow: 'hidden',
               }}
             >
+              {/* Integrated Editor Pane Header Bar */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '6px 12px',
+                  background: 'var(--bg-cell)',
+                  borderBottom: '1px solid var(--bg-card-border)',
+                  flexShrink: 0,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.5px' }}>
+                  <Code2 size={13} color="var(--primary)" />
+                  <span>JAVA EDITOR</span>
+                  {toastMessage && (
+                    <span
+                      style={{ fontSize: '11px', color: 'var(--success)', marginLeft: '8px', fontWeight: 700, background: 'rgba(16, 185, 129, 0.15)', padding: '1px 6px', borderRadius: '4px' }}
+                    >
+                      {toastMessage}
+                    </span>
+                  )}
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {/* Clear Code Button */}
+                  <button
+                    className="btn btn-ghost"
+                    onClick={handleClearCode}
+                    disabled={loading}
+                    title="Clear editor code and reset visualization panels"
+                    style={{ padding: '4px 8px', fontSize: '11px' }}
+                  >
+                    <Trash2 size={12} color="var(--danger)" />
+                    <span>Clear</span>
+                  </button>
+
+                  {/* Integrated Visualize Button */}
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleVisualize}
+                    disabled={loading}
+                    title="Compile and visualize execution"
+                    style={{ padding: '4px 10px', fontSize: '11px' }}
+                  >
+                    {loading ? (
+                      <><Loader2 size={12} className="spin-icon" /> Tracing...</>
+                    ) : (
+                      <><Play size={12} fill="white" /> Visualize</>
+                    )}
+                  </button>
+                </div>
+              </div>
+
               <CodeEditor code={code} onChange={setCode} currentLine={currentLine} prevLine={prevLine} theme={theme} />
             </section>
 
