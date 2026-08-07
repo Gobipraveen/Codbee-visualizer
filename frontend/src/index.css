@@ -290,3 +290,17 @@ body {
   animation: slideInStackFrame 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards, pulseActiveFrame 2s infinite;
 }
 
+/* ── Arrow Interactive Source & Target Highlights ────────────────────────── */
+.arrow-highlight-source {
+  box-shadow: 0 0 10px #00f0ff, 0 0 20px rgba(0, 240, 255, 0.4) !important;
+  border-color: #00f0ff !important;
+  background: rgba(0, 240, 255, 0.18) !important;
+  transition: all 0.2s ease;
+}
+
+.arrow-highlight-target {
+  box-shadow: 0 0 16px #00f0ff, 0 0 28px rgba(0, 240, 255, 0.35) !important;
+  border-color: #00f0ff !important;
+  transition: all 0.2s ease;
+}
+
