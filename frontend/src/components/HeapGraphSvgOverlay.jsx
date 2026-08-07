@@ -164,9 +164,19 @@ export default function HeapGraphSvgOverlay({ containerRef, stepData }) {
   useEffect(() => {
     const timer = setTimeout(recalculateArrows, 60);
     window.addEventListener('resize', recalculateArrows);
+
+    let observer = null;
+    if (containerRef.current) {
+      observer = new ResizeObserver(() => {
+        recalculateArrows();
+      });
+      observer.observe(containerRef.current);
+    }
+
     return () => {
       clearTimeout(timer);
       window.removeEventListener('resize', recalculateArrows);
+      if (observer) observer.disconnect();
     };
   }, [stepData]);
 

@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from 'react';
-import { Layers, Database } from 'lucide-react';
+import React, { useRef, useEffect, useState } from 'react';
+import { Layers, Database, Columns, Rows } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import HeapGraphSvgOverlay from './HeapGraphSvgOverlay';
 import HeapCardFactory from './visuals/HeapCardFactory';
@@ -57,6 +57,60 @@ export default function StackHeapPanel({ stepData }) {
   const heapMap = stepData?.heap || {};
   const { duration } = useAnimationSettings();
 
+  // Layout Ratio & Orientation State (Persisted in localStorage)
+  const [stackRatio, setStackRatio] = useState(() => {
+    const saved = localStorage.getItem('codbee_stack_ratio');
+    return saved ? parseFloat(saved) : 34;
+  });
+  const [layoutMode, setLayoutMode] = useState(() => {
+    const saved = localStorage.getItem('codbee_layout_mode');
+    return saved || 'side-by-side';
+  });
+  const [isResizing, setIsResizing] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('codbee_stack_ratio', stackRatio);
+  }, [stackRatio]);
+
+  useEffect(() => {
+    localStorage.setItem('codbee_layout_mode', layoutMode);
+  }, [layoutMode]);
+
+  // Handle Drag Resizing of Stack/Heap Splitter Bar
+  const handleMouseDown = (e) => {
+    e.preventDefault();
+    setIsResizing(true);
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (!isResizing || !containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      let newRatio = 34;
+      if (layoutMode === 'side-by-side') {
+        const mouseX = e.clientX - rect.left;
+        newRatio = (mouseX / rect.width) * 100;
+      } else {
+        const mouseY = e.clientY - rect.top;
+        newRatio = (mouseY / rect.height) * 100;
+      }
+      setStackRatio(Math.min(75, Math.max(15, newRatio)));
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    if (isResizing) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isResizing, layoutMode]);
+
   // Auto-scroll active (top) frame into view when step changes
   useEffect(() => {
     if (activeFrameRef.current) {
@@ -79,8 +133,7 @@ export default function StackHeapPanel({ stepData }) {
     }
   });
 
-  // Check if primary heap type is linked list or doubly linked list to format horizontal row
-  const hasLinkedList = containers.some(([_, obj]) => obj.visualType === 'linked_list' || obj.visualType === 'doubly_linked_list');
+  const isSideBySide = layoutMode === 'side-by-side';
 
   return (
     <div
@@ -88,8 +141,9 @@ export default function StackHeapPanel({ stepData }) {
       style={{
         position: 'relative',
         display: 'grid',
-        gridTemplateColumns: '34% 66%',
-        gap: '14px',
+        gridTemplateColumns: isSideBySide ? `${stackRatio}% 6px 1fr` : '1fr',
+        gridTemplateRows: isSideBySide ? '1fr' : `${stackRatio}% 6px 1fr`,
+        gap: '0px',
         height: '100%',
         width: '100%',
         overflow: 'auto',
@@ -105,11 +159,36 @@ export default function StackHeapPanel({ stepData }) {
             <Layers size={15} color="var(--primary)" />
             <span>Call Stack</span>
           </div>
-          {totalFrames > 0 && (
-            <span style={{ fontSize: '10px', color: 'var(--primary)', background: 'rgba(59, 130, 246, 0.15)', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
-              Depth: {totalFrames}
-            </span>
-          )}
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {totalFrames > 0 && (
+              <span style={{ fontSize: '10px', color: 'var(--primary)', background: 'rgba(59, 130, 246, 0.15)', padding: '2px 8px', borderRadius: '10px', fontWeight: 600 }}>
+                Depth: {totalFrames}
+              </span>
+            )}
+
+            {/* Layout Mode Toggle Button */}
+            <button
+              onClick={() => setLayoutMode((m) => (m === 'side-by-side' ? 'top-bottom' : 'side-by-side'))}
+              title={isSideBySide ? 'Switch to Top-Bottom Stacked Layout' : 'Switch to Side-by-Side Column Layout'}
+              style={{
+                background: 'var(--bg-cell)',
+                border: '1px solid var(--bg-card-border)',
+                color: 'var(--text-muted)',
+                borderRadius: '4px',
+                padding: '2px 6px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '10px',
+                fontWeight: 600,
+              }}
+            >
+              {isSideBySide ? <Rows size={12} /> : <Columns size={12} />}
+              <span>{isSideBySide ? 'Stack Top/Bottom' : 'Side-by-Side'}</span>
+            </button>
+          </div>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', overflowY: 'auto', paddingRight: '2px', flex: 1 }}>
@@ -228,6 +307,20 @@ export default function StackHeapPanel({ stepData }) {
         </div>
       </div>
 
+      {/* ── Draggable Splitter Bar (Col Resizer / Row Resizer) ── */}
+      <div
+        onMouseDown={handleMouseDown}
+        title={isSideBySide ? 'Drag to resize Call Stack width' : 'Drag to resize Call Stack height'}
+        style={{
+          width: isSideBySide ? '6px' : '100%',
+          height: isSideBySide ? '100%' : '6px',
+          background: isResizing ? 'var(--primary)' : 'var(--bg-card-border)',
+          cursor: isSideBySide ? 'col-resize' : 'row-resize',
+          zIndex: 20,
+          transition: 'background 0.15s ease',
+        }}
+      />
+
       {/* ── Heap Panel (Efficient Compact Grid & Flow Layout) ── */}
       <div style={panelCardStyle}>
         <div style={panelHeaderStyle}>
@@ -241,7 +334,7 @@ export default function StackHeapPanel({ stepData }) {
           <div
             style={{
               display: 'flex',
-              flexDirection: hasLinkedList ? 'row' : 'row',
+              flexDirection: 'row',
               flexWrap: 'wrap',
               gap: '16px 20px',
               alignItems: 'flex-start',

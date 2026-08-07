@@ -115,10 +115,17 @@ function MainApp() {
 
   // Left Panel Resizing & Collapsing State
   const [isEditorCollapsed, setIsEditorCollapsed] = useState(false);
-  const [editorWidth, setEditorWidth] = useState(380); // in px
+  const [editorWidth, setEditorWidth] = useState(() => {
+    const saved = localStorage.getItem('codbee_editor_width');
+    return saved ? parseInt(saved, 10) : 380;
+  });
   const [isResizingEditor, setIsResizingEditor] = useState(false);
   const startXRef = useRef(0);
   const startWidthRef = useRef(380);
+
+  useEffect(() => {
+    localStorage.setItem('codbee_editor_width', editorWidth);
+  }, [editorWidth]);
 
   // Close dropdown on click outside
   useEffect(() => {
