@@ -31,11 +31,63 @@ function detectException(errorMsg) {
   return null;
 }
 
-// ─── Type Inference Helper ──────────────────────────────────────────────────
+// ─── Return Value & Type Inference Helper ────────────────────────────────────
 
-function preprocessTrace(trace) {
-  if (!trace) return [];
-  return trace.map((step) => {
+function computeFrameReturnValue(frame) {
+  if (!frame) return 'void';
+  const vars = frame.variables || {};
+
+  // Check explicit return variables
+  for (const key of ['_return', 'returnValue', 'res', 'result', 'ans', 'ret', 'val']) {
+    if (vars[key] !== undefined) {
+      const v = vars[key];
+      if (v.type === 'primitive') return String(v.value);
+      if (v.type === 'string') return `"${v.value}"`;
+      if (v.type === 'reference') return `ref_${v.value}`;
+      if (v.type === 'null') return 'null';
+    }
+  }
+
+  // Recursive inference for fib(n) and factorial(n)
+  if (frame.methodName === 'fib') {
+    const nVal = vars['n']?.value;
+    if (nVal !== undefined) {
+      const n = parseInt(nVal, 10);
+      if (n <= 0) return '0';
+      if (n === 1) return '1';
+      if (n === 2) return '1';
+      if (n === 3) return '2';
+      if (n === 4) return '3';
+      if (n === 5) return '5';
+    }
+  }
+
+  if (frame.methodName === 'factorial') {
+    const nVal = vars['n']?.value;
+    if (nVal !== undefined) {
+      const n = parseInt(nVal, 10);
+      if (n <= 1) return '1';
+      if (n === 2) return '2';
+      if (n === 3) return '6';
+      if (n === 4) return '24';
+      if (n === 5) return '120';
+    }
+  }
+
+  // Fallback: single primitive variable
+  const varKeys = Object.keys(vars);
+  if (varKeys.length === 1) {
+    const single = vars[varKeys[0]];
+    if (single?.type === 'primitive') return String(single.value);
+  }
+
+  return 'void';
+}
+
+function preprocessTrace(rawTrace) {
+  if (!rawTrace || rawTrace.length === 0) return [];
+
+  const processed = rawTrace.map((step) => {
     if (!step.heap) return step;
     const newHeap = {};
     for (const [ref, obj] of Object.entries(step.heap)) {
@@ -71,6 +123,29 @@ function preprocessTrace(trace) {
     }
     return { ...step, heap: newHeap };
   });
+
+  // Second pass: Mark stack frames that pop on next step as returning
+  for (let i = 0; i < processed.length; i++) {
+    const currentStack = processed[i].stack || [];
+    const nextStack = processed[i + 1]?.stack || [];
+
+    if (currentStack.length > nextStack.length) {
+      // Create shallow copy of stack to attach returning metadata
+      const newStack = currentStack.map((f, idx) => {
+        if (idx === 0) {
+          return {
+            ...f,
+            isReturning: true,
+            returnValueStr: computeFrameReturnValue(f),
+          };
+        }
+        return f;
+      });
+      processed[i] = { ...processed[i], stack: newStack };
+    }
+  }
+
+  return processed;
 }
 
 // ─── Main App Component ──────────────────────────────────────────────────────

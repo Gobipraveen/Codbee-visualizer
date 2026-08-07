@@ -176,4 +176,40 @@ public class HashSetDemo {
     }
 }`,
   },
+  {
+    id: 'recursive-fibonacci',
+    label: '8. Recursive Fibonacci(4)',
+    className: 'FibonacciDemo',
+    code: `public class FibonacciDemo {
+    public static int fib(int n) {
+        if (n <= 1) {
+            return n;
+        }
+        return fib(n - 1) + fib(n - 2);
+    }
+
+    public static void main(String[] args) {
+        int result = fib(4);
+        System.out.println("fib(4) = " + result);
+    }
+}`,
+  },
+  {
+    id: 'recursive-factorial',
+    label: '9. Recursive Factorial(5)',
+    className: 'FactorialDemo',
+    code: `public class FactorialDemo {
+    public static int factorial(int n) {
+        if (n <= 1) {
+            return 1;
+        }
+        return n * factorial(n - 1);
+    }
+
+    public static void main(String[] args) {
+        int result = factorial(5);
+        System.out.println("factorial(5) = " + result);
+    }
+}`,
+  },
 ];

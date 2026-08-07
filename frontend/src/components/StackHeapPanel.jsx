@@ -272,8 +272,28 @@ export default function StackHeapPanel({ stepData }) {
                         </span>
                       </div>
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
-                        {isTop && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexShrink: 0 }}>
+                        {frame.isReturning && (
+                          <motion.span
+                            initial={{ opacity: 0, scale: 0.85, x: 5 }}
+                            animate={{ opacity: 1, scale: 1, x: 0 }}
+                            exit={{ opacity: 0, scale: 0.8, x: 10 }}
+                            style={{
+                              fontSize: '10px',
+                              fontWeight: 700,
+                              color: '#34d399',
+                              background: 'rgba(16, 185, 129, 0.22)',
+                              border: '1px solid #10b981',
+                              padding: '1px 7px',
+                              borderRadius: '4px',
+                              fontFamily: 'monospace',
+                              boxShadow: '0 0 8px rgba(16, 185, 129, 0.4)',
+                            }}
+                          >
+                            → returns {frame.returnValueStr || 'void'}
+                          </motion.span>
+                        )}
+                        {isTop && !frame.isReturning && (
                           <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--primary)', background: 'rgba(56, 189, 248, 0.2)', padding: '1px 5px', borderRadius: '4px' }}>
                             TOP
                           </span>
