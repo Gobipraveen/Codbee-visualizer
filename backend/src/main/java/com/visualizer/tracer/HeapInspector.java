@@ -26,6 +26,10 @@ import java.util.Map;
 public class HeapInspector {
 
     public static ValueDto inspectValue(Value value, Map<String, HeapObjectDto> heapMap) {
+        return inspectValueInline(value, heapMap, 0);
+    }
+
+    public static ValueDto inspectValueInline(Value value, Map<String, HeapObjectDto> heapMap, int depth) {
         if (value == null) {
             return new ValueDto("null", null, null);
         }
@@ -40,6 +44,27 @@ public class HeapInspector {
 
         if (value instanceof ArrayReference ar) {
             String refId = "ref_" + ar.uniqueID();
+
+            // Inline array embedding when depth > 0 (inside a collection)
+            if (depth > 0 && depth <= 3) {
+                HeapObjectDto arrayObj = new HeapObjectDto();
+                arrayObj.setId(refId);
+                arrayObj.setType(ar.referenceType().name());
+                arrayObj.setVisualType("array");
+
+                List<Value> elements = ar.getValues();
+                List<Object> elementDtos = new ArrayList<>();
+                for (int i = 0; i < elements.size(); i++) {
+                    Value elementValue = elements.get(i);
+                    ValueDto elementDto = inspectValueInline(elementValue, heapMap, depth + 1);
+                    arrayObj.getFields().put("[" + i + "]", elementDto);
+                    elementDtos.add(elementDto);
+                }
+                arrayObj.setElements(elementDtos);
+
+                return new ValueDto("nested_object", "array", refId, arrayObj);
+            }
+
             if (!heapMap.containsKey(refId)) {
                 HeapObjectDto arrayObj = new HeapObjectDto();
                 arrayObj.setId(refId);
@@ -51,7 +76,7 @@ public class HeapInspector {
                 List<Object> elementDtos = new ArrayList<>();
                 for (int i = 0; i < elements.size(); i++) {
                     Value elementValue = elements.get(i);
-                    ValueDto elementDto = inspectValue(elementValue, heapMap);
+                    ValueDto elementDto = inspectValueInline(elementValue, heapMap, depth + 1);
                     arrayObj.getFields().put("[" + i + "]", elementDto);
                     elementDtos.add(elementDto);
                 }
@@ -64,13 +89,30 @@ public class HeapInspector {
             String refId = "ref_" + objRef.uniqueID();
             String className = objRef.referenceType().name();
 
+            // When inside a collection (depth > 0) and value is a primitive wrapper (Integer, Double, etc.), extract primitive value inline!
+            if (depth > 0 && isPrimitiveWrapper(className)) {
+                Object primVal = extractPrimitiveWrapperValue(objRef);
+                return new ValueDto("primitive", className, primVal);
+            }
+
+            // Inline collection or object embedding when depth > 0 (inside a collection)
+            if (depth > 0 && depth <= 3) {
+                HeapObjectDto heapObj = new HeapObjectDto();
+                heapObj.setId(refId);
+                heapObj.setType(className);
+
+                classifyAndExtract(objRef, heapObj, heapMap, depth);
+
+                return new ValueDto("nested_object", heapObj.getVisualType(), refId, heapObj);
+            }
+
             if (!heapMap.containsKey(refId)) {
                 HeapObjectDto heapObj = new HeapObjectDto();
                 heapObj.setId(refId);
                 heapObj.setType(className);
                 heapMap.put(refId, heapObj); // put first to break cycles
 
-                classifyAndExtract(objRef, heapObj, heapMap);
+                classifyAndExtract(objRef, heapObj, heapMap, depth);
             }
 
             HeapObjectDto existing = heapMap.get(refId);
@@ -81,7 +123,7 @@ public class HeapInspector {
         return new ValueDto("unknown", null, value.toString());
     }
 
-    private static void classifyAndExtract(ObjectReference objRef, HeapObjectDto heapObj, Map<String, HeapObjectDto> heapMap) {
+    private static void classifyAndExtract(ObjectReference objRef, HeapObjectDto heapObj, Map<String, HeapObjectDto> heapMap, int depth) {
         ReferenceType refType = objRef.referenceType();
         String className = refType.name();
 
@@ -99,14 +141,14 @@ public class HeapInspector {
             } else {
                 heapObj.setVisualType("object");
             }
-            extractFields(objRef, heapObj, heapMap);
+            extractFields(objRef, heapObj, heapMap, depth);
             return;
         }
 
         // 2. Primitive Wrappers
         if (isPrimitiveWrapper(className)) {
             heapObj.setVisualType("primitive_wrapper");
-            extractFields(objRef, heapObj, heapMap);
+            extractFields(objRef, heapObj, heapMap, depth);
             return;
         }
 
@@ -123,55 +165,55 @@ public class HeapInspector {
         // 4. Map implementations
         if (isMap(refType)) {
             heapObj.setVisualType("map");
-            extractMapElements(objRef, heapObj, heapMap);
+            extractMapElements(objRef, heapObj, heapMap, depth);
             return;
         }
 
         // 5. Set implementations
         if (isSet(refType)) {
             heapObj.setVisualType("set");
-            extractSetElements(objRef, heapObj, heapMap);
+            extractSetElements(objRef, heapObj, heapMap, depth);
             return;
         }
 
         // 6. Stack / Queue / Deque / List
         if (className.equals("java.util.Stack")) {
             heapObj.setVisualType("stack");
-            extractListOrStackElements(objRef, heapObj, heapMap);
+            extractListOrStackElements(objRef, heapObj, heapMap, depth);
             return;
         }
 
         if (className.equals("java.util.ArrayDeque")) {
             heapObj.setVisualType("deque");
-            extractArrayDequeElements(objRef, heapObj, heapMap);
+            extractArrayDequeElements(objRef, heapObj, heapMap, depth);
             return;
         }
 
         if (isQueue(refType)) {
             heapObj.setVisualType("queue");
-            extractListOrStackElements(objRef, heapObj, heapMap);
+            extractListOrStackElements(objRef, heapObj, heapMap, depth);
             return;
         }
 
         if (isList(refType)) {
             heapObj.setVisualType("list");
-            extractListOrStackElements(objRef, heapObj, heapMap);
+            extractListOrStackElements(objRef, heapObj, heapMap, depth);
             return;
         }
 
         // Default fallback
         heapObj.setVisualType("object");
-        extractFields(objRef, heapObj, heapMap);
+        extractFields(objRef, heapObj, heapMap, depth);
     }
 
-    private static void extractFields(ObjectReference objRef, HeapObjectDto heapObj, Map<String, HeapObjectDto> heapMap) {
+    private static void extractFields(ObjectReference objRef, HeapObjectDto heapObj, Map<String, HeapObjectDto> heapMap, int depth) {
         try {
             List<Field> fields = objRef.referenceType().allFields();
             for (Field field : fields) {
                 if (!field.isStatic() && !field.isSynthetic()) {
                     try {
                         Value fieldValue = objRef.getValue(field);
-                        ValueDto fieldDto = inspectValue(fieldValue, heapMap);
+                        ValueDto fieldDto = inspectValueInline(fieldValue, heapMap, depth + 1);
                         heapObj.getFields().put(field.name(), fieldDto);
                     } catch (Exception ignored) {
                     }
@@ -262,7 +304,7 @@ public class HeapInspector {
         return null;
     }
 
-    private static void extractMapElements(ObjectReference objRef, HeapObjectDto heapObj, Map<String, HeapObjectDto> heapMap) {
+    private static void extractMapElements(ObjectReference objRef, HeapObjectDto heapObj, Map<String, HeapObjectDto> heapMap, int depth) {
         try {
             ReferenceType refType = objRef.referenceType();
             Field tableField = getFieldByName(refType, "table");
@@ -283,8 +325,8 @@ public class HeapInspector {
                                     Value vVal = currNode.getValue(valField);
 
                                     Map<String, ValueDto> pair = new LinkedHashMap<>();
-                                    pair.put("key", inspectValue(kVal, heapMap));
-                                    pair.put("value", inspectValue(vVal, heapMap));
+                                    pair.put("key", inspectValueInline(kVal, heapMap, depth + 1));
+                                    pair.put("value", inspectValueInline(vVal, heapMap, depth + 1));
                                     heapObj.getElements().add(pair);
                                 }
 
@@ -306,14 +348,14 @@ public class HeapInspector {
             if (rootField != null) {
                 Value rootVal = objRef.getValue(rootField);
                 if (rootVal instanceof ObjectReference rootNode) {
-                    traverseTreeMapNode(rootNode, heapObj, heapMap);
+                    traverseTreeMapNode(rootNode, heapObj, heapMap, depth);
                 }
             }
         } catch (Exception ignored) {
         }
     }
 
-    private static void traverseTreeMapNode(ObjectReference node, HeapObjectDto heapObj, Map<String, HeapObjectDto> heapMap) {
+    private static void traverseTreeMapNode(ObjectReference node, HeapObjectDto heapObj, Map<String, HeapObjectDto> heapMap, int depth) {
         if (node == null) return;
         try {
             ReferenceType nodeType = node.referenceType();
@@ -324,27 +366,27 @@ public class HeapInspector {
 
             if (leftField != null) {
                 Value leftVal = node.getValue(leftField);
-                if (leftVal instanceof ObjectReference leftNode) traverseTreeMapNode(leftNode, heapObj, heapMap);
+                if (leftVal instanceof ObjectReference leftNode) traverseTreeMapNode(leftNode, heapObj, heapMap, depth);
             }
 
             if (keyField != null && valField != null) {
                 Value kVal = node.getValue(keyField);
                 Value vVal = node.getValue(valField);
                 Map<String, ValueDto> pair = new LinkedHashMap<>();
-                pair.put("key", inspectValue(kVal, heapMap));
-                pair.put("value", inspectValue(vVal, heapMap));
+                pair.put("key", inspectValueInline(kVal, heapMap, depth + 1));
+                pair.put("value", inspectValueInline(vVal, heapMap, depth + 1));
                 heapObj.getElements().add(pair);
             }
 
             if (rightField != null) {
                 Value rightVal = node.getValue(rightField);
-                if (rightVal instanceof ObjectReference rightNode) traverseTreeMapNode(rightNode, heapObj, heapMap);
+                if (rightVal instanceof ObjectReference rightNode) traverseTreeMapNode(rightNode, heapObj, heapMap, depth);
             }
         } catch (Exception ignored) {
         }
     }
 
-    private static void extractSetElements(ObjectReference objRef, HeapObjectDto heapObj, Map<String, HeapObjectDto> heapMap) {
+    private static void extractSetElements(ObjectReference objRef, HeapObjectDto heapObj, Map<String, HeapObjectDto> heapMap, int depth) {
         try {
             ReferenceType refType = objRef.referenceType();
             Field mapField = getFieldByName(refType, "map");
@@ -354,7 +396,7 @@ public class HeapInspector {
                 Value mapVal = objRef.getValue(mapField);
                 if (mapVal instanceof ObjectReference mapObj) {
                     HeapObjectDto tempMapObj = new HeapObjectDto();
-                    extractMapElements(mapObj, tempMapObj, heapMap);
+                    extractMapElements(mapObj, tempMapObj, heapMap, depth);
                     for (Object entryObj : tempMapObj.getElements()) {
                         if (entryObj instanceof Map<?, ?> pairMap) {
                             Object keyObj = pairMap.get("key");
@@ -369,7 +411,7 @@ public class HeapInspector {
         }
     }
 
-    private static void extractListOrStackElements(ObjectReference objRef, HeapObjectDto heapObj, Map<String, HeapObjectDto> heapMap) {
+    private static void extractListOrStackElements(ObjectReference objRef, HeapObjectDto heapObj, Map<String, HeapObjectDto> heapMap, int depth) {
         try {
             ReferenceType refType = objRef.referenceType();
 
@@ -388,7 +430,7 @@ public class HeapInspector {
                     }
                     for (int i = 0; i < size; i++) {
                         Value elemVal = arrayRef.getValue(i);
-                        heapObj.getElements().add(inspectValue(elemVal, heapMap));
+                        heapObj.getElements().add(inspectValueInline(elemVal, heapMap, depth + 1));
                     }
                     return;
                 }
@@ -406,7 +448,7 @@ public class HeapInspector {
 
                         if (itemField != null) {
                             Value itemVal = node.getValue(itemField);
-                            heapObj.getElements().add(inspectValue(itemVal, heapMap));
+                            heapObj.getElements().add(inspectValueInline(itemVal, heapMap, depth + 1));
                         }
 
                         if (nextField != null) {
@@ -422,7 +464,7 @@ public class HeapInspector {
         }
     }
 
-    private static void extractArrayDequeElements(ObjectReference objRef, HeapObjectDto heapObj, Map<String, HeapObjectDto> heapMap) {
+    private static void extractArrayDequeElements(ObjectReference objRef, HeapObjectDto heapObj, Map<String, HeapObjectDto> heapMap, int depth) {
         try {
             ReferenceType refType = objRef.referenceType();
             Field elementsField = getFieldByName(refType, "elements");
@@ -444,7 +486,7 @@ public class HeapInspector {
                         while (i != tail) {
                             Value elemVal = elemsArray.getValue(i);
                             if (elemVal != null) {
-                                heapObj.getElements().add(inspectValue(elemVal, heapMap));
+                                heapObj.getElements().add(inspectValueInline(elemVal, heapMap, depth + 1));
                             }
                             i = (i + 1) % len;
                         }
@@ -496,5 +538,19 @@ public class HeapInspector {
         if (pv instanceof ByteValue bv) return bv.value();
         if (pv instanceof ShortValue sv) return sv.value();
         return pv.toString();
+    }
+
+    private static Object extractPrimitiveWrapperValue(ObjectReference objRef) {
+        try {
+            Field valueField = getFieldByName(objRef.referenceType(), "value");
+            if (valueField != null) {
+                Value val = objRef.getValue(valueField);
+                if (val instanceof PrimitiveValue pv) {
+                    return extractPrimitive(pv);
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return objRef.toString();
     }
 }

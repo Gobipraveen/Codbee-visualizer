@@ -4,13 +4,13 @@ import { ArrowRightLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAnimationSettings } from '../../context/AnimationSettingsContext';
 
-export default function QueueVisual({ heapId, objDto }) {
+export default function QueueVisual({ heapId, objDto, isNested = false, depth = 0 }) {
   const elements = objDto?.elements || [];
   const { duration } = useAnimationSettings();
 
   return (
     <motion.div
-      data-heap-card-id={heapId}
+      data-heap-card-id={isNested ? undefined : heapId}
       initial={{ opacity: 0, scale: 0.9, y: 10 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.85 }}
@@ -19,20 +19,21 @@ export default function QueueVisual({ heapId, objDto }) {
         background: '#121826',
         borderRadius: '8px',
         border: '1px solid #a855f7',
-        boxShadow: '0 4px 12px rgba(168, 85, 247, 0.15)',
-        padding: '10px 12px',
+        boxShadow: isNested ? 'none' : '0 4px 12px rgba(168, 85, 247, 0.15)',
+        padding: isNested ? '6px 8px' : '10px 12px',
         display: 'flex',
         flexDirection: 'column',
         gap: '8px',
-        minWidth: '220px',
+        minWidth: isNested ? '180px' : '220px',
+        maxWidth: isNested ? '100%' : '340px',
       }}
     >
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1e293b', paddingBottom: '6px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <ArrowRightLeft size={14} color="#a855f7" />
-          <span style={{ fontWeight: 600, color: '#c084fc', fontSize: '12px', fontFamily: 'monospace' }}>
-            {cleanClassName(objDto.type)}
+          <ArrowRightLeft size={13} color="#a855f7" />
+          <span style={{ fontWeight: 600, color: '#c084fc', fontSize: '11px', fontFamily: 'monospace' }}>
+            {cleanClassName(objDto?.type || 'Queue')}
           </span>
         </div>
       </div>
@@ -62,7 +63,7 @@ export default function QueueVisual({ heapId, objDto }) {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  <RenderValue valDto={elemVal} sourceId={`${heapId}-q-${idx}`} />
+                  <RenderValue valDto={elemVal} sourceId={`${heapId}-q-${idx}`} depth={depth} />
                 </motion.div>
               ))}
             </AnimatePresence>

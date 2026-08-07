@@ -4,7 +4,7 @@ import { Box } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAnimationSettings } from '../../context/AnimationSettingsContext';
 
-export default function ArrayVisual({ heapId, objDto }) {
+export default function ArrayVisual({ heapId, objDto, isNested = false, depth = 0 }) {
   const fields = objDto?.fields || {};
   const elements = objDto?.elements || [];
   const { duration } = useAnimationSettings();
@@ -21,7 +21,7 @@ export default function ArrayVisual({ heapId, objDto }) {
 
   return (
     <motion.div
-      data-heap-card-id={heapId}
+      data-heap-card-id={isNested ? undefined : heapId}
       initial={{ opacity: 0, scale: 0.9, y: 10 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.85 }}
@@ -30,20 +30,21 @@ export default function ArrayVisual({ heapId, objDto }) {
         background: '#121826',
         borderRadius: '8px',
         border: '1px solid #3b82f6',
-        boxShadow: '0 4px 12px rgba(59, 130, 246, 0.15)',
-        padding: '10px 12px',
+        boxShadow: isNested ? 'none' : '0 4px 12px rgba(59, 130, 246, 0.15)',
+        padding: isNested ? '6px 8px' : '10px 12px',
         display: 'flex',
         flexDirection: 'column',
         gap: '8px',
-        minWidth: '220px',
+        minWidth: isNested ? '160px' : '220px',
+        maxWidth: isNested ? '100%' : '340px',
       }}
     >
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1e293b', paddingBottom: '6px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Box size={14} color="#3b82f6" />
-          <span style={{ fontWeight: 600, color: '#60a5fa', fontSize: '12px', fontFamily: 'monospace' }}>
-            {cleanClassName(objDto.type)}
+          <Box size={13} color="#3b82f6" />
+          <span style={{ fontWeight: 600, color: '#60a5fa', fontSize: '11px', fontFamily: 'monospace' }}>
+            {cleanClassName(objDto?.type || 'Array')}
           </span>
         </div>
       </div>
@@ -65,7 +66,7 @@ export default function ArrayVisual({ heapId, objDto }) {
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  minWidth: '46px',
+                  minWidth: '42px',
                   background: '#0f172a',
                   border: '1px solid #1e293b',
                   borderRadius: '6px',
@@ -76,7 +77,7 @@ export default function ArrayVisual({ heapId, objDto }) {
                   [{index}]
                 </span>
                 <div style={{ fontSize: '12px' }}>
-                  <RenderValue valDto={valDto} sourceId={`${heapId}-idx-${index}`} />
+                  <RenderValue valDto={valDto} sourceId={`${heapId}-idx-${index}`} depth={depth} />
                 </div>
               </motion.div>
             ))}

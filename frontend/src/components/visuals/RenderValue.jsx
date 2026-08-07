@@ -3,9 +3,26 @@ import { Link as LinkIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAnimationSettings } from '../../context/AnimationSettingsContext';
 
-export function RenderValue({ valDto, sourceId }) {
+import HeapCardFactory from './HeapCardFactory';
+
+export function RenderValue({ valDto, sourceId, depth = 0 }) {
   const { duration } = useAnimationSettings();
   if (!valDto) return <span style={{ color: 'var(--text-subtle)' }}>null</span>;
+
+  if ((valDto.type === 'nested_object' || valDto.nestedObject) && valDto.nestedObject) {
+    if (depth >= 3) {
+      return (
+        <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', fontFamily: 'monospace' }}>
+          {valDto.nestedObject.type || 'Object'} …
+        </span>
+      );
+    }
+    return (
+      <div style={{ display: 'inline-block', verticalAlign: 'middle', margin: '2px 0' }}>
+        <HeapCardFactory heapId={valDto.nestedObject.id || 'nested'} objDto={valDto.nestedObject} isNested={true} depth={depth + 1} />
+      </div>
+    );
+  }
 
   if (valDto.type === 'reference') {
     const targetRef = String(valDto.value);

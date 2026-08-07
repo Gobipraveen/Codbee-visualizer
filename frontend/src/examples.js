@@ -212,4 +212,81 @@ public class HashSetDemo {
     }
 }`,
   },
+  {
+    id: 'map-of-lists',
+    label: '10. Map of Lists (HashMap<String, ArrayList<String>>)',
+    className: 'MapOfListsDemo',
+    code: `import java.util.HashMap;
+import java.util.ArrayList;
+
+public class MapOfListsDemo {
+    public static void main(String[] args) {
+        HashMap<String, ArrayList<String>> map = new HashMap<>();
+        
+        ArrayList<String> fruits = new ArrayList<>();
+        fruits.add("apple");
+        fruits.add("banana");
+        map.put("fruits", fruits);
+
+        ArrayList<String> colors = new ArrayList<>();
+        colors.add("red");
+        colors.add("blue");
+        map.put("colors", colors);
+
+        System.out.println("Map of lists initialized");
+    }
+}`,
+  },
+  {
+    id: 'stack-of-stacks',
+    label: '11. Stack of Stacks (Stack<Stack<Integer>>)',
+    className: 'StackOfStacksDemo',
+    code: `import java.util.Stack;
+
+public class StackOfStacksDemo {
+    public static void main(String[] args) {
+        Stack<Stack<Integer>> outer = new Stack<>();
+
+        Stack<Integer> s1 = new Stack<>();
+        s1.push(10);
+        s1.push(20);
+        outer.push(s1);
+
+        Stack<Integer> s2 = new Stack<>();
+        s2.push(30);
+        s2.push(40);
+        outer.push(s2);
+
+        System.out.println("Stack of stacks initialized");
+    }
+}`,
+  },
+  {
+    id: 'map-list-tree',
+    label: '12. Map of LinkedList of TreeNodes',
+    className: 'MapListTreeDemo',
+    code: `import java.util.HashMap;
+import java.util.LinkedList;
+
+public class MapListTreeDemo {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode(int val) { this.val = val; }
+    }
+
+    public static void main(String[] args) {
+        HashMap<String, LinkedList<TreeNode>> map = new HashMap<>();
+        LinkedList<TreeNode> list = new LinkedList<>();
+
+        TreeNode n1 = new TreeNode(10);
+        n1.left = new TreeNode(5);
+        list.add(n1);
+
+        map.put("tree1", list);
+        System.out.println("Nested Map of LinkedList of TreeNodes built");
+    }
+}`,
+  },
 ];

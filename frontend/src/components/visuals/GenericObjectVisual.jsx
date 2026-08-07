@@ -4,13 +4,13 @@ import { Box } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAnimationSettings } from '../../context/AnimationSettingsContext';
 
-export default function GenericObjectVisual({ heapId, objDto }) {
+export default function GenericObjectVisual({ heapId, objDto, isNested = false, depth = 0 }) {
   const fields = objDto?.fields || {};
   const { duration } = useAnimationSettings();
 
   return (
     <motion.div
-      data-heap-card-id={heapId}
+      data-heap-card-id={isNested ? undefined : heapId}
       initial={{ opacity: 0, scale: 0.9, y: 10 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.85 }}
@@ -19,20 +19,20 @@ export default function GenericObjectVisual({ heapId, objDto }) {
         background: '#121826',
         borderRadius: '8px',
         border: '1px solid #334155',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
-        padding: '10px 12px',
+        boxShadow: isNested ? 'none' : '0 4px 12px rgba(0, 0, 0, 0.2)',
+        padding: isNested ? '4px 6px' : '10px 12px',
         display: 'flex',
         flexDirection: 'column',
-        gap: '8px',
-        minWidth: '180px',
+        gap: '6px',
+        minWidth: isNested ? '130px' : '180px',
       }}
     >
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1e293b', paddingBottom: '6px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1e293b', paddingBottom: '4px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Box size={14} color="#94a3b8" />
-          <span style={{ fontWeight: 600, color: '#f8fafc', fontSize: '12px', fontFamily: 'monospace' }}>
-            {cleanClassName(objDto.type)}
+          <Box size={13} color="#94a3b8" />
+          <span style={{ fontWeight: 600, color: '#f8fafc', fontSize: '11px', fontFamily: 'monospace' }}>
+            {cleanClassName(objDto?.type || 'Object')}
           </span>
         </div>
       </div>
@@ -49,7 +49,7 @@ export default function GenericObjectVisual({ heapId, objDto }) {
                   {fieldName}
                 </td>
                 <td style={{ padding: '3px 0', textAlign: 'right' }}>
-                  <RenderValue valDto={valDto} sourceId={`${heapId}-${fieldName}`} />
+                  <RenderValue valDto={valDto} sourceId={`${heapId}-${fieldName}`} depth={depth} />
                 </td>
               </tr>
             ))}

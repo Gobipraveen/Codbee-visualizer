@@ -4,13 +4,13 @@ import { Layers } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAnimationSettings } from '../../context/AnimationSettingsContext';
 
-export default function StackVisual({ heapId, objDto }) {
+export default function StackVisual({ heapId, objDto, isNested = false, depth = 0 }) {
   const elements = objDto?.elements || [];
   const { duration } = useAnimationSettings();
 
   return (
     <motion.div
-      data-heap-card-id={heapId}
+      data-heap-card-id={isNested ? undefined : heapId}
       initial={{ opacity: 0, scale: 0.9, y: 10 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.85 }}
@@ -19,21 +19,21 @@ export default function StackVisual({ heapId, objDto }) {
         background: '#121826',
         borderRadius: '8px',
         border: '1px solid #f97316',
-        boxShadow: '0 4px 10px rgba(249, 115, 22, 0.15)',
-        padding: '8px 10px',
+        boxShadow: isNested ? 'none' : '0 4px 10px rgba(249, 115, 22, 0.15)',
+        padding: isNested ? '4px 6px' : '8px 10px',
         display: 'flex',
         flexDirection: 'column',
         gap: '6px',
-        minWidth: '150px',
-        maxWidth: '220px',
+        minWidth: isNested ? '130px' : '150px',
+        maxWidth: isNested ? '100%' : '260px',
       }}
     >
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #1e293b', paddingBottom: '4px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <Layers size={13} color="#f97316" />
+          <Layers size={12} color="#f97316" />
           <span style={{ fontWeight: 600, color: '#fb923c', fontSize: '11px', fontFamily: 'monospace' }}>
-            {cleanClassName(objDto.type)}
+            {cleanClassName(objDto?.type || 'Stack')}
           </span>
         </div>
       </div>
@@ -63,9 +63,10 @@ export default function StackVisual({ heapId, objDto }) {
                     borderRadius: '4px',
                     padding: '3px 6px',
                     position: 'relative',
+                    gap: '6px',
                   }}
                 >
-                  <RenderValue valDto={elemVal} sourceId={`${heapId}-stk-${originalIdx}`} />
+                  <RenderValue valDto={elemVal} sourceId={`${heapId}-stk-${originalIdx}`} depth={depth} />
                   {isTop && (
                     <span style={{ fontSize: '8px', fontWeight: 800, color: '#f97316', background: 'rgba(249, 115, 22, 0.25)', padding: '1px 3px', borderRadius: '3px', letterSpacing: '0.5px' }}>
                       TOP
