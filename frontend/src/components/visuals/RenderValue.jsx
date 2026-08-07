@@ -5,6 +5,74 @@ import { useAnimationSettings } from '../../context/AnimationSettingsContext';
 
 import HeapCardFactory from './HeapCardFactory';
 
+function NestedObjectWrapper({ nestedObj, depth }) {
+  const [isExpanded, setIsExpanded] = React.useState(depth <= 1);
+  const typeName = cleanClassName(nestedObj?.type || 'Object');
+  const count = nestedObj?.elements?.length || Object.keys(nestedObj?.fields || {}).length;
+
+  return (
+    <div style={{ display: 'inline-flex', flexDirection: 'column', verticalAlign: 'middle', margin: '2px 0' }}>
+      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginBottom: isExpanded ? '3px' : '0' }}>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsExpanded(!isExpanded);
+          }}
+          title={isExpanded ? 'Collapse nested collection' : 'Expand nested collection'}
+          style={{
+            background: isExpanded ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+            border: isExpanded ? '1px solid #ef4444' : '1px solid #10b981',
+            color: isExpanded ? '#f87171' : '#34d399',
+            borderRadius: '4px',
+            padding: '1px 5px',
+            fontSize: '10px',
+            fontWeight: 'bold',
+            fontFamily: 'monospace',
+            cursor: 'pointer',
+            lineHeight: 1,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {isExpanded ? '–' : '+'}
+        </button>
+        {!isExpanded && (
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsExpanded(true);
+            }}
+            style={{
+              fontSize: '11px',
+              fontFamily: 'monospace',
+              color: 'var(--primary)',
+              cursor: 'pointer',
+              background: 'rgba(59, 130, 246, 0.1)',
+              border: '1px solid rgba(59, 130, 246, 0.3)',
+              borderRadius: '4px',
+              padding: '1px 6px',
+            }}
+          >
+            {typeName} ({count} {count === 1 ? 'item' : 'items'})
+          </span>
+        )}
+      </div>
+
+      {isExpanded && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          transition={{ duration: 0.15 }}
+        >
+          <HeapCardFactory heapId={nestedObj.id || 'nested'} objDto={nestedObj} isNested={true} depth={depth + 1} />
+        </motion.div>
+      )}
+    </div>
+  );
+}
+
 export function RenderValue({ valDto, sourceId, depth = 0 }) {
   const { duration } = useAnimationSettings();
   if (!valDto) return <span style={{ color: 'var(--text-subtle)' }}>null</span>;
@@ -17,11 +85,7 @@ export function RenderValue({ valDto, sourceId, depth = 0 }) {
         </span>
       );
     }
-    return (
-      <div style={{ display: 'inline-block', verticalAlign: 'middle', margin: '2px 0' }}>
-        <HeapCardFactory heapId={valDto.nestedObject.id || 'nested'} objDto={valDto.nestedObject} isNested={true} depth={depth + 1} />
-      </div>
-    );
+    return <NestedObjectWrapper nestedObj={valDto.nestedObject} depth={depth} />;
   }
 
   if (valDto.type === 'reference') {

@@ -415,8 +415,9 @@ public class HeapInspector {
         try {
             ReferenceType refType = objRef.referenceType();
 
-            // ArrayList / Vector / Stack (elementData & size)
+            // ArrayList / Vector / Stack / PriorityQueue (elementData / queue & size)
             Field elementDataField = getFieldByName(refType, "elementData");
+            if (elementDataField == null) elementDataField = getFieldByName(refType, "queue");
             Field sizeField = getFieldByName(refType, "size");
             if (sizeField == null) sizeField = getFieldByName(refType, "elementCount");
 

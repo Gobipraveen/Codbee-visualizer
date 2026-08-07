@@ -289,4 +289,39 @@ public class MapListTreeDemo {
     }
 }`,
   },
+  {
+    id: 'category-index',
+    label: '13. Real-World Tag Index (HashMap<String, ArrayList<TreeNode>>)',
+    className: 'CategoryIndexDemo',
+    code: `import java.util.HashMap;
+import java.util.ArrayList;
+
+public class CategoryIndexDemo {
+    static class TreeNode {
+        int val;
+        TreeNode left;
+        TreeNode right;
+        TreeNode(int val) { this.val = val; }
+    }
+
+    public static void main(String[] args) {
+        HashMap<String, ArrayList<TreeNode>> index = new HashMap<>();
+
+        ArrayList<TreeNode> techTrees = new ArrayList<>();
+        TreeNode root1 = new TreeNode(100);
+        root1.left = new TreeNode(50);
+        techTrees.add(root1);
+
+        ArrayList<TreeNode> scienceTrees = new ArrayList<>();
+        TreeNode root2 = new TreeNode(200);
+        root2.right = new TreeNode(300);
+        scienceTrees.add(root2);
+
+        index.put("tech", techTrees);
+        index.put("science", scienceTrees);
+
+        System.out.println("Real-world Tag Index initialized");
+    }
+}`,
+  },
 ];
